@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "182130679012",
+    "project_id": "money-budgets",
+    "storage_bucket": "money-budgets.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:182130679012:android:c6611a898918f29cf3a0f1",
+        "android_client_info": {
+          "package_name": "personal.money.budget"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "182130679012-9hk47tcohgoh1gqcjrc0ccjhjle08gqt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "personal.money.budget",
+            "certificate_hash": "a87fc6ddc38f3f1d0e25f0a0365d0b06fa46b961"
+          }
+        },
+        {
+          "client_id": "182130679012-mdeaktsl0fj4umh6ih85qpacl339m0gl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "personal.money.budget",
+            "certificate_hash": "11c76d2a12b6de706a455c36bf706f23051b9eb3"
+          }
+        },
+        {
+          "client_id": "182130679012-c10mlbdq292t6lfvn3aeb52qli61shlv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR2lJ8r3NNXSNjHGXImPoXcakInkl1dD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "182130679012-c10mlbdq292t6lfvn3aeb52qli61shlv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

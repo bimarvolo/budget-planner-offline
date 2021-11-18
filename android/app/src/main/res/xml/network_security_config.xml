@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">http://ec2-13-212-192-133.ap-southeast-1.compute.amazonaws.com:1337</domain>
+        <domain includeSubdomains="true">ec2-13-212-192-133.ap-southeast-1.compute.amazonaws.com</domain>
+        <domain includeSubdomains="true">http://ec2-13-212-192-133.ap-southeast-1.compute.amazonaws.com</domain>
+    </domain-config>
+</network-security-config>
