@@ -293,16 +293,8 @@ class _AddBudgetState extends State<AddBudget> {
       final snackBar = SnackBar(content: Text(AppLocalizations.of(context).msgCreateBudgetSuccess));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
-      // Navigator.of(ctx).pushReplacementNamed(OverviewScreen.routeName,
-      //     arguments: {"id": newB.id});
-      // Metadata metadata;
-      // if(metadata == null) {
-      //   metadata = new Metadata(currentBudget: newB.id);
-      // } else {
-      //   metadata.currentBudget = newB.id;
-      // }
 
-      // Provider.of<UserData>(ctx, listen: false).setMetadata(metadata);
+      Provider.of<Metadata>(ctx, listen: false).setCurrentBudget(newB.id);
 
     } catch (error) {
       print(error);

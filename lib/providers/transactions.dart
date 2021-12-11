@@ -29,6 +29,7 @@ class Transactions with ChangeNotifier {
 
   void setItems(List<Transaction> list) {
     _items = list;
+    _items.sort((a,b)=> b.date.compareTo(a.date));
     notifyListeners();
   }
 
@@ -60,6 +61,7 @@ class Transactions with ChangeNotifier {
       });
 
       _items = loadedTransactions;
+      _items.sort((a,b)=> b.date.compareTo(a.date));
       notifyListeners();
     } catch (error) {
       throw (error);

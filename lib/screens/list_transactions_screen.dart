@@ -91,47 +91,47 @@ class _ListTransactionsState extends State<ListTransactions> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(children: [
-                      Text(
-                        AppLocalizations.of(context).youSpent,
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
-                      Text(
-                        // '${category.totalSpent}',
-                        '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, category.totalSpent)}',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
-                    ]),
-                    Row(children: [
-                      Text(
-                        '${AppLocalizations.of(context).budget} :',
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
-                      Text(
-                        '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, category.volume)}',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
-                    ]),
-                  ],
-                ),
+        child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(children: [
+                    Text(
+                      AppLocalizations.of(context).youSpent,
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                    Text(
+                      // '${category.totalSpent}',
+                      '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, category.totalSpent)}',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                  ]),
+                  Row(children: [
+                    Text(
+                      '${AppLocalizations.of(context).budget} :',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                    Text(
+                      '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, category.volume)}',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                  ]),
+                ],
+              ),
 
-                SizedBox(
-                  height: 5,
-                ),
-                SpendBar(
-                    category.volume, category.totalSpent / category.volume),
-                SizedBox(
-                  height: 10,
-                ),
-                Container(
+              SizedBox(
+                height: 5,
+              ),
+              SpendBar(
+                  category.volume, category.totalSpent / category.volume),
+              SizedBox(
+                height: 10,
+              ),
+              SingleChildScrollView(
+                child: Container(
                   width: double.infinity,
-                  height: 800,
+                  height: MediaQuery.of(context).size.height - 200,
                   child: ListView.builder(
                         itemCount: transactions.length,
                         itemBuilder: (ctx, i) => Dismissible(
@@ -223,8 +223,8 @@ class _ListTransactionsState extends State<ListTransactions> {
                             )),
                       ),
                 ),
-              ]),
-        ),
+              ),
+            ]),
       ),
     );
   }
