@@ -34,7 +34,7 @@ class _AddExpensiveState extends State<AddExpensive> {
 
   void _saveForm(BuildContext ctx) async {
     var isValidated = _form.currentState.validate();
-    if(!isValidated) return;
+    if (!isValidated) return;
 
     _form.currentState.save();
     _newExpensive = Transaction(
@@ -51,13 +51,14 @@ class _AddExpensiveState extends State<AddExpensive> {
       Provider.of<Categories>(ctx, listen: false)
           .increaseTotalSpent(_categorySelected.id, _newExpensive.volume);
 
-      final snackBar =
-          SnackBar(content: Text(AppLocalizations.of(context).msgCreateExpenseSuccess));
+      final snackBar = SnackBar(
+          content: Text(AppLocalizations.of(context).msgCreateExpenseSuccess));
 
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
     } catch (error) {
-      Helper.showPopup(ctx, error, AppLocalizations.of(context).msgCreateExpenseFailed);
+      Helper.showPopup(
+          ctx, error, AppLocalizations.of(context).msgCreateExpenseFailed);
     }
   }
 
@@ -99,8 +100,9 @@ class _AddExpensiveState extends State<AddExpensive> {
     List<Category> categories =
         Provider.of<Categories>(context, listen: false).expensiveCategories;
     if (categories.length != 0) {
-      if(widget.categoryId != null) {
-        _categorySelected = categories.firstWhere((cate) => cate.id == widget.categoryId);
+      if (widget.categoryId != null) {
+        _categorySelected =
+            categories.firstWhere((cate) => cate.id == widget.categoryId);
       } else {
         if (_categorySelected == null) _categorySelected = categories[0];
       }
@@ -111,7 +113,10 @@ class _AddExpensiveState extends State<AddExpensive> {
         title: Text('Add Expensive'),
         actions: [
           IconButton(
-            icon: Icon(Icons.save, color: Theme.of(context).accentColor,),
+            icon: Icon(
+              Icons.save,
+              color: Theme.of(context).accentColor,
+            ),
             iconSize: 40,
             onPressed: () => _saveForm(context),
           ),
@@ -151,8 +156,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                           child: Row(
                             children: [
                               Icon(value.iconData),
-                              Text(
-                                  ' ${value.description}'),
+                              Text(' ${value.description}'),
                             ],
                           ),
                         );
@@ -162,7 +166,10 @@ class _AddExpensiveState extends State<AddExpensive> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: IconButton(
-                      icon: Icon(Icons.add_circle_outline, color: Theme.of(context).accentColor,),
+                      icon: Icon(
+                        Icons.add_circle_outline,
+                        color: Theme.of(context).accentColor,
+                      ),
                       iconSize: 30,
                       onPressed: () => _onNewCategoryTouch(context),
                     ),
@@ -170,25 +177,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                 ],
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Description'),
                 autofocus: widget.categoryId != null,
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value.isEmpty) return 'please provide description!';
-                  return null;
-                },
-                onSaved: (value) {
-                  _newExpensive = Transaction(
-                    description: value,
-                    volume: _newExpensive.volume,
-                    id: null,
-                    date: null,
-                    categoryId:
-                        _categorySelected != null ? _categorySelected.id : null,
-                  );
-                },
-              ),
-              TextFormField(
                 decoration: InputDecoration(labelText: 'Amount'),
                 textInputAction: TextInputAction.done,
                 validator: (value) {
@@ -214,7 +203,23 @@ class _AddExpensiveState extends State<AddExpensive> {
                   );
                 },
               ),
-              SizedBox(height: 20,),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Description'),
+                textInputAction: TextInputAction.next,
+                onSaved: (value) {
+                  _newExpensive = Transaction(
+                    description: value,
+                    volume: _newExpensive.volume,
+                    id: null,
+                    date: null,
+                    categoryId:
+                        _categorySelected != null ? _categorySelected.id : null,
+                  );
+                },
+              ),
+              SizedBox(
+                height: 20,
+              ),
               Text('Transaction date: '),
               Container(
                 height: 70,

@@ -132,6 +132,7 @@ class _AddCategoryState extends State<AddCategory> {
                 ],
               ),
               TextFormField(
+                autofocus: true,
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context).description),
                 textInputAction: TextInputAction.next,

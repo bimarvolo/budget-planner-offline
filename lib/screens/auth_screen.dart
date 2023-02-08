@@ -265,10 +265,10 @@ class _AuthCardState extends State<AuthCard> {
       ),
       elevation: 8.0,
       child: AnimatedContainer(
-        height: _authMode == AuthMode.Signup ? 320 : 460,
+        height: _authMode == AuthMode.Signup ? 350 : 280,
         duration: Duration(milliseconds: 1000),
         constraints:
-            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 320 : 460),
+            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 350 : 280),
         width: deviceSize.width * 0.75,
         padding: EdgeInsets.all(16.0),
         child: Form(
@@ -330,16 +330,6 @@ class _AuthCardState extends State<AuthCard> {
                           }
                         : null,
                   ),
-
-                // SizedBox(
-                //   height: 20,
-                // ),
-                // IconButton(icon: Icon(Icons.bug_report), onPressed: () => {
-                //   _emailController.text = 'vinh2304@gmail.com',
-                //   _passwordController.text = 'enove214',
-                //   _submit(context)
-                // },),
-
                 SizedBox(
                   height: 20,
                 ),
@@ -347,9 +337,8 @@ class _AuthCardState extends State<AuthCard> {
                 if (!_isLoading)
                   Container(
                     decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: ElevatedButton(
                       child: Text(_authMode == AuthMode.Login
                           ? AppLocalizations.of(context).login
@@ -359,25 +348,26 @@ class _AuthCardState extends State<AuthCard> {
                   ),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
-                  child: TextButton(
+                  child: OutlinedButton(
                     child: Text(
                       '${_authMode == AuthMode.Login ? AppLocalizations.of(context).signup : AppLocalizations.of(context).loginInstead}',
                       style: TextStyle(
-                          color: Theme.of(context).primaryTextTheme.button.color),
+                          color:
+                              Theme.of(context).primaryTextTheme.button.color),
                     ),
                     onPressed: _switchAuthMode,
                   ),
                 ),
-
                 SizedBox(
                   height: 40,
                 ),
-                Divider(),
+                // Divider(),
                 if (_isLoading && _authMode != AuthMode.Login)
                   CircularProgressIndicator(),
-                if (_authMode == AuthMode.Login)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
+                /*if (_authMode == AuthMode.Login)
+                   Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(10),
@@ -385,11 +375,15 @@ class _AuthCardState extends State<AuthCard> {
                     child: ElevatedButton(
                       child: Text(
                         AppLocalizations.of(context).signInWithGoogle,
-                        style: TextStyle(color: Theme.of(context).primaryTextTheme.button.color),
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .primaryTextTheme
+                                .button
+                                .color),
                       ),
                       onPressed: () => _handleGoogleSignIn(context),
                     ),
-                  )
+                  ) */
               ],
             ),
           ),
