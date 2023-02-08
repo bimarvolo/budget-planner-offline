@@ -17,9 +17,7 @@ class AddCategory extends StatefulWidget {
   _AddCategoryState createState() => _AddCategoryState();
 }
 
-
 class _AddCategoryState extends State<AddCategory> {
-
   final _form = GlobalKey<FormState>();
   var _newCategory = Category(
     id: null,
@@ -38,16 +36,16 @@ class _AddCategoryState extends State<AddCategory> {
   IconData _iconData;
 
   _pickIcon() async {
-    IconData icon = await FlutterIconPicker.showIconPicker(context, iconPackMode: IconPack.material);
+    IconData icon = await FlutterIconPicker.showIconPicker(context);
 
     _iconData = icon;
     _icon = Icon(icon);
-    setState((){});
+    setState(() {});
   }
 
   void _saveForm(BuildContext ctx) async {
     var isValidated = _form.currentState.validate();
-    if(!isValidated) return;
+    if (!isValidated) return;
 
     _form.currentState.save();
     _newCategory = Category(
@@ -57,26 +55,27 @@ class _AddCategoryState extends State<AddCategory> {
         type: _categoryType == CategoryType.expensive ? 'expensive' : 'income',
         volume: _newCategory.volume,
         totalSpent: 0.0,
-        iconData: _iconData == null ? Icons.category : _iconData
-    );
+        iconData: _iconData == null ? Icons.category : _iconData);
 
     try {
       await Provider.of<Categories>(ctx, listen: false)
           .addCategory(_newCategory);
 
-      final snackBar = SnackBar(content: Text(AppLocalizations.of(context).msgCreateCategorySuccess));
+      final snackBar = SnackBar(
+          content: Text(AppLocalizations.of(context).msgCreateCategorySuccess));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
-
     } catch (error) {
-      Helper.showPopup(ctx, error, AppLocalizations.of(context).msgCreateCategoryFailed);
+      Helper.showPopup(
+          ctx, error, AppLocalizations.of(context).msgCreateCategoryFailed);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     var metaData = Provider.of<Metadata>(context, listen: false);
-    var budget = Provider.of<Budgets>(context, listen: false).findById(metaData.currentBudget);
+    var budget = Provider.of<Budgets>(context, listen: false)
+        .findById(metaData.currentBudget);
     setState(() {
       _budget = budget;
     });
@@ -98,8 +97,11 @@ class _AddCategoryState extends State<AddCategory> {
           key: _form,
           child: ListView(
             children: <Widget>[
-              Text('${AppLocalizations.of(context).forBudget} ${_budget.titleDisplay}'),
-              SizedBox(height: 10,),
+              Text(
+                  '${AppLocalizations.of(context).forBudget} ${_budget.titleDisplay}'),
+              SizedBox(
+                height: 10,
+              ),
               Text(AppLocalizations.of(context).categoryType),
               Row(
                 children: [
@@ -129,13 +131,14 @@ class _AddCategoryState extends State<AddCategory> {
                   ),
                 ],
               ),
-
               TextFormField(
-                decoration: InputDecoration(labelText: AppLocalizations.of(context).description),
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).description),
                 textInputAction: TextInputAction.next,
                 validator: (value) {
-                  if(value.isEmpty)
-                    return AppLocalizations.of(context).pleaseProvideDescription;
+                  if (value.isEmpty)
+                    return AppLocalizations.of(context)
+                        .pleaseProvideDescription;
                   return null;
                 },
                 onSaved: (value) {
@@ -150,47 +153,49 @@ class _AddCategoryState extends State<AddCategory> {
                 },
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: _categoryType == CategoryType.expensive ? AppLocalizations.of(context).budgetedAmount : AppLocalizations.of(context).incomeGoal),
+                decoration: InputDecoration(
+                    labelText: _categoryType == CategoryType.expensive
+                        ? AppLocalizations.of(context).budgetedAmount
+                        : AppLocalizations.of(context).incomeGoal),
                 textInputAction: TextInputAction.done,
                 validator: (value) {
-                  if(value.isEmpty)
-                  return AppLocalizations.of(context).pleaseProvideAVolume;
+                  if (value.isEmpty)
+                    return AppLocalizations.of(context).pleaseProvideAVolume;
 
-                  if(double.tryParse(value) == null)
-                    return AppLocalizations.of(context).pleaseProvideAValidNumber;
+                  if (double.tryParse(value) == null)
+                    return AppLocalizations.of(context)
+                        .pleaseProvideAValidNumber;
 
-                  if(double.parse(value) <= 0)
-                    return AppLocalizations.of(context).pleaseEnterNumberGreaterThanZero;
+                  if (double.parse(value) <= 0)
+                    return AppLocalizations.of(context)
+                        .pleaseEnterNumberGreaterThanZero;
 
                   return null;
                 },
                 keyboardType: TextInputType.number,
                 onSaved: (value) {
                   _newCategory = Category(
-                    type: _newCategory.type,
-                    volume: double.parse(value),
-                    totalSpent: 0.0,
-                    description: _newCategory.description,
-                    id: null,
-                    budgetId: null
-                  );
+                      type: _newCategory.type,
+                      volume: double.parse(value),
+                      totalSpent: 0.0,
+                      description: _newCategory.description,
+                      id: null,
+                      budgetId: null);
                 },
               ),
-
-              SizedBox(height: 10,),
-              Row(
-                  children: <Widget>[
-                    FlatButton(
-                      onPressed: _pickIcon,
-                      child: Text('Pick an icon'),
-                    ),
-                    SizedBox(height: 10),
-                    AnimatedSwitcher(
-                        duration: Duration(milliseconds: 300),
-                        child: _icon != null ? _icon : Container()
-                    )
-                  ])
-              ,
+              SizedBox(
+                height: 10,
+              ),
+              Row(children: <Widget>[
+                TextButton(
+                  onPressed: _pickIcon,
+                  child: Text('Pick an icon'),
+                ),
+                SizedBox(height: 10),
+                AnimatedSwitcher(
+                    duration: Duration(milliseconds: 300),
+                    child: _icon != null ? _icon : Container())
+              ]),
             ],
           ),
         ),

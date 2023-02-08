@@ -73,7 +73,7 @@ class _EditExpensiveState extends State<EditExpensive> {
           title: Text('An error occurred!'),
           content: Text('Something went wrong.'),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('Okay'),
               onPressed: () {
                 Navigator.of(ctx).pop();
@@ -243,7 +243,7 @@ class _EditExpensiveState extends State<EditExpensive> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
                     Expanded(
-                      child: OutlineButton(
+                      child: OutlinedButton(
 //                      textColor: Theme.of(context).primaryColor,
                         child: Text(
                           _selectedDate == null
@@ -254,7 +254,7 @@ class _EditExpensiveState extends State<EditExpensive> {
                       ),
                     ),
                     Expanded(
-                      child: OutlineButton(
+                      child: OutlinedButton(
                         child: Text(
                           _selectedDate == null
                               ? 'No Time Chosen!'

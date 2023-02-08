@@ -486,7 +486,7 @@ class _AddBudgetState extends State<AddBudget> {
                   Column(children: [
                     Text(AppLocalizations.of(context).startDate),
                     Container(
-                      child: OutlineButton(
+                      child: OutlinedButton(
                         child: Text(
                           _selectedStartDate == null
                               ? AppLocalizations.of(context).msgNoDateChosen
@@ -500,7 +500,7 @@ class _AddBudgetState extends State<AddBudget> {
                     children: [
                       Text(AppLocalizations.of(context).endDate),
                       Container(
-                        child: OutlineButton(
+                        child: OutlinedButton(
                           child: Text(
                             _selectedEndDate == null
                                 ? AppLocalizations.of(context).msgNoDateChosen

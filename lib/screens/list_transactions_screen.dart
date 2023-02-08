@@ -145,13 +145,13 @@ class _ListTransactionsState extends State<ListTransactions> {
                                     title: Text(AppLocalizations.of(context).confirm),
                                     content: Text(AppLocalizations.of(context).areYouSureYouWishToDeleteThisItem),
                                     actions: <Widget>[
-                                      FlatButton(
+                                      TextButton(
                                           onPressed: () => {
                                             _onTransDelete(context, transactions[i].id, transactions[i].volume)
                                             },
                                           child: Text(AppLocalizations.of(context).delete),
                                             ),
-                                      FlatButton(
+                                      TextButton(
                                         onPressed: () => Navigator.of(context).pop(false),
                                         child: Text(AppLocalizations.of(context).cancel),
                                             ),

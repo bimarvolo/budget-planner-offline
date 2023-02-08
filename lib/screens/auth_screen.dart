@@ -63,10 +63,8 @@ class AuthScreen extends StatelessWidget {
                             offset: Offset(0, 2),
                           )
                         ],
-
                       ),
-                      child:
-                      Text(
+                      child: Text(
                         AppLocalizations.of(context).budgetPlaner,
                         style: TextStyle(
                           // color: Theme.of(context).accentTextTheme.title.color,
@@ -123,22 +121,21 @@ class _AuthCardState extends State<AuthCard> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-            title: Text(AppLocalizations.of(context).errorMessage),
-            content: Text(message),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('Okay'),
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                },
-              )
-            ],
-          ),
+        title: Text(AppLocalizations.of(context).errorMessage),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: Text('Okay'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          )
+        ],
+      ),
     );
   }
 
   Future<void> _submit(ctx) async {
-
     if (!_formKey.currentState.validate()) {
       return;
     }
@@ -156,26 +153,29 @@ class _AuthCardState extends State<AuthCard> {
 
         Auth auth = Provider.of<Auth>(context, listen: false);
         Metadata meta = auth.metadata;
-        Provider.of<Metadata>(context, listen: false).setAuth(auth.userId, auth.token);
-        Provider.of<Metadata>(context, listen: false).syncMetadata(meta.language, meta.currency, meta.currentBudget, meta.themeMode);
+        Provider.of<Metadata>(context, listen: false)
+            .setAuth(auth.userId, auth.token);
+        Provider.of<Metadata>(context, listen: false).syncMetadata(
+            meta.language, meta.currency, meta.currentBudget, meta.themeMode);
       } else {
         // Sign user up
-          await Provider.of<Auth>(context, listen: false).signup(
-            _authData['email'],
-            _authData['password'],
+        await Provider.of<Auth>(context, listen: false).signup(
+          _authData['email'],
+          _authData['password'],
         );
 
-        final snackBar = SnackBar(content: Text(AppLocalizations.of(context).loginSuccess));
+        final snackBar =
+            SnackBar(content: Text(AppLocalizations.of(context).loginSuccess));
         ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
 
         // auto login after signup
         _switchAuthMode();
-          await _submit(context);
+        await _submit(context);
       }
     } on SocketException catch (error) {
       var errorMessage = AppLocalizations.of(context).authenticationFailed;
 
-      if(error != null && error.osError != null)
+      if (error != null && error.osError != null)
         errorMessage = error.osError.message;
 
       _showErrorDialog(errorMessage);
@@ -183,7 +183,7 @@ class _AuthCardState extends State<AuthCard> {
       print(error);
       var errorMessage = AppLocalizations.of(context).couldNotAuthenticate;
 
-      if(error is String) {
+      if (error is String) {
         _showErrorDialog(error is String ? error : errorMessage);
       }
     }
@@ -200,17 +200,20 @@ class _AuthCardState extends State<AuthCard> {
       print(ggAuth.idToken);
       print(ggAuth.accessToken);
 
-      if(result == null) {
+      if (result == null) {
         final snackBar3 = SnackBar(content: Text("Sign in google error"));
         ScaffoldMessenger.of(ctx).showSnackBar(snackBar3);
       } else {
-        bool isExisted = await Provider.of<Auth>(context, listen: false).loginWithGoogle(result.email);
+        bool isExisted = await Provider.of<Auth>(context, listen: false)
+            .loginWithGoogle(result.email);
 
-        if(isExisted) {
+        if (isExisted) {
           Auth auth = Provider.of<Auth>(context, listen: false);
           Metadata meta = auth.metadata;
-          Provider.of<Metadata>(context, listen: false).setAuth(auth.userId, auth.token);
-          Provider.of<Metadata>(context, listen: false).syncMetadata(meta.language, meta.currency, meta.currentBudget, meta.themeMode);
+          Provider.of<Metadata>(context, listen: false)
+              .setAuth(auth.userId, auth.token);
+          Provider.of<Metadata>(context, listen: false).syncMetadata(
+              meta.language, meta.currency, meta.currentBudget, meta.themeMode);
         } else {
           _emailController.text = result.email;
           _passwordController.text = 'Budget@423';
@@ -240,9 +243,7 @@ class _AuthCardState extends State<AuthCard> {
   void initState() {
     _googleSignIn = GoogleSignIn(
       clientId: AppConst.FIREBASE_CLIENT_ID,
-      scopes: [
-        'email'
-      ],
+      scopes: ['email'],
     );
     super.initState();
   }
@@ -277,10 +278,10 @@ class _AuthCardState extends State<AuthCard> {
               children: <Widget>[
                 TextFormField(
                   decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context).email,
+                    labelText: AppLocalizations.of(context).email,
                   ),
                   keyboardType: TextInputType.emailAddress,
-            controller: _emailController,
+                  controller: _emailController,
                   validator: (value) {
                     if (value.isEmpty || !value.contains('@')) {
                       return AppLocalizations.of(context).invalidEmail;
@@ -294,9 +295,11 @@ class _AuthCardState extends State<AuthCard> {
                 TextFormField(
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context).password,
-                      suffixIcon: GestureDetector(
+                    suffixIcon: GestureDetector(
                         onTap: _changePwdMode,
-                          child: Icon(_isShowPwd ? Icons.visibility_off_rounded : Icons.remove_red_eye_rounded)),
+                        child: Icon(_isShowPwd
+                            ? Icons.visibility_off_rounded
+                            : Icons.remove_red_eye_rounded)),
                   ),
                   obscureText: !_isShowPwd,
                   controller: _passwordController,
@@ -313,12 +316,15 @@ class _AuthCardState extends State<AuthCard> {
                 if (_authMode == AuthMode.Signup)
                   TextFormField(
                     enabled: _authMode == AuthMode.Signup,
-                    decoration: InputDecoration(labelText: AppLocalizations.of(context).confirmPassword),
+                    decoration: InputDecoration(
+                        labelText:
+                            AppLocalizations.of(context).confirmPassword),
                     obscureText: !_isShowPwd,
                     validator: _authMode == AuthMode.Signup
                         ? (value) {
                             if (value != _passwordController.text) {
-                              return AppLocalizations.of(context).passwordsDoNotMatch;
+                              return AppLocalizations.of(context)
+                                  .passwordsDoNotMatch;
                             }
                             return null;
                           }
@@ -337,31 +343,30 @@ class _AuthCardState extends State<AuthCard> {
                 SizedBox(
                   height: 20,
                 ),
-                if (_isLoading)
-                  CircularProgressIndicator(),
+                if (_isLoading) CircularProgressIndicator(),
                 if (!_isLoading)
-                  RaisedButton(
-                    child:
-                        Text(_authMode == AuthMode.Login ? AppLocalizations.of(context).login : AppLocalizations.of(context).signup),
-                    onPressed: () => _submit(context),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
+                  Container(
+                    decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor,
-                    textColor: Theme.of(context).primaryTextTheme.button.color,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                FlatButton(
-                  child:
-                  Text(
-                    '${_authMode == AuthMode.Login ? AppLocalizations.of(context).signup : AppLocalizations.of(context).loginInstead}',
-                    style: TextStyle(color: Theme.of(context).primaryTextTheme.button.color),
+                    child: ElevatedButton(
+                      child: Text(_authMode == AuthMode.Login
+                          ? AppLocalizations.of(context).login
+                          : AppLocalizations.of(context).signup),
+                      onPressed: () => _submit(context),
+                    ),
                   ),
-                  onPressed: _switchAuthMode,
+                Container(
                   padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  textColor: Theme.of(context).primaryColor,
+                  child: TextButton(
+                    child: Text(
+                      '${_authMode == AuthMode.Login ? AppLocalizations.of(context).signup : AppLocalizations.of(context).loginInstead}',
+                      style: TextStyle(
+                          color: Theme.of(context).primaryTextTheme.button.color),
+                    ),
+                    onPressed: _switchAuthMode,
+                  ),
                 ),
 
                 SizedBox(
@@ -371,18 +376,20 @@ class _AuthCardState extends State<AuthCard> {
                 if (_isLoading && _authMode != AuthMode.Login)
                   CircularProgressIndicator(),
                 if (_authMode == AuthMode.Login)
-                  RaisedButton(
-                    child:
-                    Text(AppLocalizations.of(context).signInWithGoogle),
-                    onPressed: () => _handleGoogleSignIn(context),
-                    shape: RoundedRectangleBorder(
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
-                    color: Theme.of(context).primaryColor,
-                    textColor: Theme.of(context).primaryTextTheme.button.color,
-                  ),
+                    child: ElevatedButton(
+                      child: Text(
+                        AppLocalizations.of(context).signInWithGoogle,
+                        style: TextStyle(color: Theme.of(context).primaryTextTheme.button.color),
+                      ),
+                      onPressed: () => _handleGoogleSignIn(context),
+                    ),
+                  )
               ],
             ),
           ),

@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:money_budget_frontend/providers/category.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';

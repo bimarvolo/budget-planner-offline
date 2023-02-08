@@ -57,11 +57,11 @@ class IncomeItem extends StatelessWidget {
                   title: Text(AppLocalizations.of(context).confirm),
                   content: Text(AppLocalizations.of(context).areYouSureYouWishToDeleteThisItem),
                   actions: <Widget>[
-                    FlatButton(
+                    TextButton(
                         onPressed: () => _onDeleteIncome(context, income),
                         child: Text(AppLocalizations.of(context).delete)
                     ),
-                    FlatButton(
+                    TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
                       child: Text(AppLocalizations.of(context).cancel),
                     ),

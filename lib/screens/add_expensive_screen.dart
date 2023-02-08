@@ -222,7 +222,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
                     Expanded(
-                      child: OutlineButton(
+                      child: OutlinedButton(
 //                      textColor: Theme.of(context).primaryColor,
                         child: Text(
                           _selectedDate == null
@@ -233,7 +233,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                       ),
                     ),
                     Expanded(
-                      child: OutlineButton(
+                      child: OutlinedButton(
                         child: Text(
                           _selectedDate == null
                               ? 'No Time Chosen!'

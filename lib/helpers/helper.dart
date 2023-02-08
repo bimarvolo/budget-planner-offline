@@ -61,7 +61,7 @@ class Helper {
       title: Text(AppLocalizations.of(context).anErrorOccurred),
       content: Text(message),
       actions: <Widget>[
-        FlatButton(
+        TextButton(
           child: Text('Okay'),
           onPressed: () {
             Navigator.of(ctx).pop();

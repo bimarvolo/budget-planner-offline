@@ -114,7 +114,7 @@ class _AllBudgetsState extends State<AllBudgets> {
                                 .of(context)
                                 .areYouSureYouWishToDeleteThisItem),
                             actions: <Widget>[
-                              FlatButton(
+                              TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
                                     _onDeleteBudget(context, budgets[i], metaData.currentBudget);
@@ -122,7 +122,7 @@ class _AllBudgetsState extends State<AllBudgets> {
                                   child: Text(AppLocalizations
                                       .of(context)
                                       .delete)),
-                              FlatButton(
+                              TextButton(
                                 onPressed: () =>
                                     Navigator.pop(context, false),
                                 child: Text(AppLocalizations
