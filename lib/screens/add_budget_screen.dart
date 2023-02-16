@@ -10,6 +10,7 @@ import '../providers/budgets.dart';
 import './overview_screen.dart';
 
 enum RangeSelection { THIS_MONTH, THIS_WEEK, THIS_DAY, NEXT_MONTH, NEXT_WEEK }
+
 enum ExpensiveCategory {
   HOUSING,
   TRANSPORTATION,
@@ -42,24 +43,54 @@ class _AddBudgetState extends State<AddBudget> {
   final myController = TextEditingController();
 
   var _expensiveDefaults = [
-    {'key': ExpensiveCategory.HOUSING, 'name': 'Housing', 'iconData': Icons.house, 'checked': false},
+    {
+      'key': ExpensiveCategory.HOUSING,
+      'name': 'Housing',
+      'iconData': Icons.house,
+      'checked': false
+    },
     {
       'key': ExpensiveCategory.TRANSPORTATION,
       'name': 'Transportation',
       'iconData': Icons.electric_bike,
       'checked': false
     },
-    {'key': ExpensiveCategory.FOOD, 'name': 'Food', 'iconData': Icons.ramen_dining, 'checked': false},
-    {'key': ExpensiveCategory.UTILITIES, 'name': 'Utilities', 'iconData': Icons.category,  'checked': false},
-    {'key': ExpensiveCategory.CLOTHING, 'name': 'Clothing', 'iconData': Icons.dry_cleaning,  'checked': false},
+    {
+      'key': ExpensiveCategory.FOOD,
+      'name': 'Food',
+      'iconData': Icons.ramen_dining,
+      'checked': false
+    },
+    {
+      'key': ExpensiveCategory.UTILITIES,
+      'name': 'Utilities',
+      'iconData': Icons.category,
+      'checked': false
+    },
+    {
+      'key': ExpensiveCategory.CLOTHING,
+      'name': 'Clothing',
+      'iconData': Icons.dry_cleaning,
+      'checked': false
+    },
     {
       'key': ExpensiveCategory.MEDICAL_HEALTH_CARE,
       'name': 'Medical/HealthCare',
       'iconData': Icons.medical_services,
       'checked': false
     },
-    {'key': ExpensiveCategory.INSURANCE, 'name': 'Insurance', 'iconData': Icons.security, 'checked': false},
-    {'key': ExpensiveCategory.EDUCATION, 'name': 'Education', 'iconData': Icons.school, 'checked': false},
+    {
+      'key': ExpensiveCategory.INSURANCE,
+      'name': 'Insurance',
+      'iconData': Icons.security,
+      'checked': false
+    },
+    {
+      'key': ExpensiveCategory.EDUCATION,
+      'name': 'Education',
+      'iconData': Icons.school,
+      'checked': false
+    },
     {
       'key': ExpensiveCategory.ENTERTAINMENT,
       'name': 'Entertainment',
@@ -75,8 +106,18 @@ class _AddBudgetState extends State<AddBudget> {
   ];
 
   var _incomeDefaults = [
-    {'key': 'SALARY', 'name': 'Salary', 'iconData': Icons.attach_money, 'checked': false},
-    {'key': 'OTHERS', 'name': 'Other income', 'iconData': Icons.request_quote, 'checked': false},
+    {
+      'key': 'SALARY',
+      'name': 'Salary',
+      'iconData': Icons.attach_money,
+      'checked': false
+    },
+    {
+      'key': 'OTHERS',
+      'name': 'Other income',
+      'iconData': Icons.request_quote,
+      'checked': false
+    },
   ];
 
   var _newBudget = Budget(
@@ -118,7 +159,8 @@ class _AddBudgetState extends State<AddBudget> {
 
     var index = -1;
     if (_cateExSelection == null) {
-      index = _cateExSelection.indexWhere((c) => c.description == _getTransText(ctx, ex['key']));
+      index = _cateExSelection
+          .indexWhere((c) => c.description == _getTransText(ctx, ex['key']));
     }
 
     if (index != -1) {
@@ -136,8 +178,8 @@ class _AddBudgetState extends State<AddBudget> {
   }
 
   Future<void> _selectDefaultIncome(ctx, income) async {
-    var item =
-    _incomeDefaults.firstWhere((element) => element['key'] == income['key']);
+    var item = _incomeDefaults
+        .firstWhere((element) => element['key'] == income['key']);
     if (item['checked']) {
       setState(() {
         item['checked'] = !item['checked'];
@@ -150,7 +192,8 @@ class _AddBudgetState extends State<AddBudget> {
     });
 
     myController.clear();
-    final bool isSave = await _enterAmount("text", _getTransText(ctx, income['key']));
+    final bool isSave =
+        await _enterAmount("text", _getTransText(ctx, income['key']));
 
     if (isSave == null || !isSave)
       setState(() {
@@ -171,7 +214,8 @@ class _AddBudgetState extends State<AddBudget> {
 
     var index = -1;
     if (_cateExSelection == null) {
-      index = _cateExSelection.indexWhere((c) => c.description == _getTransText(ctx, income['key']));
+      index = _cateExSelection.indexWhere(
+          (c) => c.description == _getTransText(ctx, income['key']));
     }
 
     if (index != -1) {
@@ -224,14 +268,13 @@ class _AddBudgetState extends State<AddBudget> {
       _selectedStartDate = st;
       _selectedEndDate = ed;
     });
-
   }
 
   Future<bool> _enterAmount(String text, String cateName) async {
-    var title = text == "" ? '${AppLocalizations.of(context).budgetedAmount} $cateName'
+    var title = text == ""
+        ? '${AppLocalizations.of(context).budgetedAmount} $cateName'
         : '${AppLocalizations.of(context).incomeGoal}: $cateName';
-    var label = text == "" ? ''
-        : '${AppLocalizations.of(context).incomeGoal}';
+    var label = text == "" ? '' : '${AppLocalizations.of(context).incomeGoal}';
 
     return await showDialog<bool>(
         context: context,
@@ -288,19 +331,20 @@ class _AddBudgetState extends State<AddBudget> {
         endDate: _selectedEndDate);
 
     try {
-      Budget newB = await Provider.of<Budgets>(ctx, listen: false).addBudget(_newBudget);
+      Budget newB =
+          await Provider.of<Budgets>(ctx, listen: false).addBudget(_newBudget);
 
-      final snackBar = SnackBar(content: Text(AppLocalizations.of(context).msgCreateBudgetSuccess));
+      final snackBar = SnackBar(
+          content: Text(AppLocalizations.of(context).msgCreateBudgetSuccess));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
 
       Provider.of<Metadata>(ctx, listen: false).setCurrentBudget(newB.id);
-
     } catch (error) {
       print(error);
 
       String message = AppLocalizations.of(context).msgCreateBudgetFailed;
-      if(error.osError.errorCode == 7)
+      if (error.osError.errorCode == 7)
         message = AppLocalizations.of(context).youAreOffline;
 
       final snackBar = SnackBar(content: Text(message));
@@ -340,44 +384,42 @@ class _AddBudgetState extends State<AddBudget> {
     });
   }
 
-  String _getTransText( BuildContext ctx,  ex) {
+  String _getTransText(BuildContext ctx, ex) {
     String tx = 'default';
     switch (ex) {
-      case ExpensiveCategory.CHILDCARE :
+      case ExpensiveCategory.CHILDCARE:
         tx = AppLocalizations.of(context).childcare;
         break;
-      case ExpensiveCategory.CLOTHING :
+      case ExpensiveCategory.CLOTHING:
         tx = AppLocalizations.of(context).clothing;
         break;
-      case ExpensiveCategory.EDUCATION :
+      case ExpensiveCategory.EDUCATION:
         tx = AppLocalizations.of(context).education;
         break;
-      case ExpensiveCategory.ENTERTAINMENT :
+      case ExpensiveCategory.ENTERTAINMENT:
         tx = AppLocalizations.of(context).entertainment;
         break;
-      case ExpensiveCategory.FOOD :
+      case ExpensiveCategory.FOOD:
         tx = AppLocalizations.of(context).food;
         break;
-      case ExpensiveCategory.HOUSING :
+      case ExpensiveCategory.HOUSING:
         tx = AppLocalizations.of(context).housing;
         break;
-      case ExpensiveCategory.INSURANCE :
+      case ExpensiveCategory.INSURANCE:
         tx = AppLocalizations.of(context).insurance;
         break;
-      case ExpensiveCategory.MEDICAL_HEALTH_CARE :
+      case ExpensiveCategory.MEDICAL_HEALTH_CARE:
         tx = AppLocalizations.of(context).medicalHealthCare;
         break;
-      case ExpensiveCategory.UTILITIES :
+      case ExpensiveCategory.UTILITIES:
         tx = AppLocalizations.of(context).utilities;
         break;
-      case ExpensiveCategory.TRANSPORTATION :
+      case ExpensiveCategory.TRANSPORTATION:
         tx = AppLocalizations.of(context).transportation;
         break;
       default:
-        if(ex == 'SALARY')
-          tx = AppLocalizations.of(context).salary;
-        if(ex == 'OTHERS')
-          tx = AppLocalizations.of(context).otherIncome;
+        if (ex == 'SALARY') tx = AppLocalizations.of(context).salary;
+        if (ex == 'OTHERS') tx = AppLocalizations.of(context).otherIncome;
         break;
     }
 
@@ -404,7 +446,10 @@ class _AddBudgetState extends State<AddBudget> {
         title: Text(AppLocalizations.of(context).newBudget),
         actions: [
           IconButton(
-            icon: Icon(Icons.save, color: Theme.of(context).accentColor,),
+            icon: Icon(
+              Icons.save,
+              color: Theme.of(context).accentColor,
+            ),
             iconSize: 40,
             onPressed: () => _saveForm(context),
           ),
@@ -530,7 +575,11 @@ class _AddBudgetState extends State<AddBudget> {
                         headerBuilder: (context, isExpanded) {
                           return Container(
                             alignment: Alignment.center,
-                            child: Text(AppLocalizations.of(context).addSomeCategoriesToThisBudget, style: TextStyle(fontWeight: FontWeight.w500),),
+                            child: Text(
+                              AppLocalizations.of(context)
+                                  .addSomeCategoriesToThisBudget,
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
                           );
                         },
                         body: Wrap(
@@ -539,11 +588,29 @@ class _AddBudgetState extends State<AddBudget> {
                           children: [
                             for (var item in _expensiveDefaults)
                               GestureDetector(
-                                onTap: () => {_selectDefaultExpensive(context, item)},
-                                child: InputChip(
-                                  selected: item['checked'],
-                                  avatar: Icon(item['iconData']),
-                                  label: Text(_getTransText(context, item['key'])),
+                                onTap: () =>
+                                    {_selectDefaultExpensive(context, item)},
+                                child: Chip(
+                                  backgroundColor: item['checked']
+                                      ? Theme.of(context)
+                                          .chipTheme
+                                          .backgroundColor
+                                      : null,
+                                  avatar: Icon(item['iconData'],
+                                      color: item['checked']
+                                          ? Colors.amber[700]
+                                          : Theme.of(context)
+                                              .chipTheme
+                                              .selectedColor),
+                                  label: Text(
+                                    _getTransText(context, item['key']),
+                                    style: TextStyle(
+                                        color: item['checked']
+                                            ? Colors.amber[700]
+                                            : Theme.of(context)
+                                                .chipTheme
+                                                .checkmarkColor),
+                                  ),
                                 ),
                               ),
                           ],
@@ -553,7 +620,6 @@ class _AddBudgetState extends State<AddBudget> {
                   ],
                 ),
               ),
-
               Divider(),
               SizedBox(
                 height: 10,
@@ -571,7 +637,11 @@ class _AddBudgetState extends State<AddBudget> {
                         headerBuilder: (context, isExpanded) {
                           return Container(
                             alignment: Alignment.center,
-                            child: Text(AppLocalizations.of(context).addIncomesToThisBudget, style: TextStyle(fontWeight: FontWeight.w500),),
+                            child: Text(
+                              AppLocalizations.of(context)
+                                  .addIncomesToThisBudget,
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
                           );
                         },
                         body: Wrap(
@@ -581,11 +651,29 @@ class _AddBudgetState extends State<AddBudget> {
                           children: [
                             for (var item in _incomeDefaults)
                               GestureDetector(
-                                onTap: () => {_selectDefaultIncome(context, item)},
-                                child: InputChip(
-                                  selected: item['checked'],
-                                  avatar: Icon(item['iconData']),
-                                  label: Text(_getTransText(context, item['key'])),
+                                onTap: () =>
+                                    {_selectDefaultIncome(context, item)},
+                                child: Chip(
+                                  backgroundColor: item['checked']
+                                      ? Theme.of(context)
+                                          .chipTheme
+                                          .backgroundColor
+                                      : null,
+                                  avatar: Icon(item['iconData'],
+                                      color: item['checked']
+                                          ? Colors.amber[700]
+                                          : Theme.of(context)
+                                              .chipTheme
+                                              .selectedColor),
+                                  label: Text(
+                                    _getTransText(context, item['key']),
+                                    style: TextStyle(
+                                        color: item['checked']
+                                            ? Colors.amber[700]
+                                            : Theme.of(context)
+                                                .chipTheme
+                                                .checkmarkColor),
+                                  ),
                                 ),
                               ),
                           ],
@@ -596,7 +684,8 @@ class _AddBudgetState extends State<AddBudget> {
                 ),
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: AppLocalizations.of(context).youNeedABudgetName),
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).youNeedABudgetName),
                 textInputAction: TextInputAction.next,
                 onSaved: (value) {
                   _newBudget = Budget(

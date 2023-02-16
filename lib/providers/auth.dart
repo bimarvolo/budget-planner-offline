@@ -1,19 +1,21 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../helpers/helper.dart';
 import './metadata.dart';
 import '../app_constant.dart';
 
 class Auth with ChangeNotifier {
   DateTime _expiryDate;
- String _token;
- String _userId;
- String _email;
- Metadata _metadata;
+  String _token;
+  String _userId;
+  String _email;
+  Metadata _metadata;
   Timer _authTimer;
 
   bool get isAuth {
@@ -43,24 +45,20 @@ class Auth with ChangeNotifier {
     return _metadata?.currentBudget;
   }
 
-  Future<void> _authenticate(
-      String email, String password) async {
-
+  Future<void> _authenticate(String email, String password) async {
     final url = '${AppConst.BASE_URL}/user/login';
     final Uri uri = Uri.parse(url);
     try {
       final response = await http.post(
         uri,
         body: json.encode(
-          {
-            'email': email,
-            'password': password
-          },
+          {'email': email, 'password': password},
         ),
       );
 
       await _saveLoginData(response);
     } catch (error) {
+      print(error);
       throw error;
     }
   }
@@ -68,7 +66,7 @@ class Auth with ChangeNotifier {
   _saveLoginData(response) async {
     final responseData = json.decode(response.body);
     if (responseData['error'] != null) {
-      if(responseData['error'] is String) {
+      if (responseData['error'] is String) {
         throw responseData['error'];
       }
 
@@ -111,21 +109,15 @@ class Auth with ChangeNotifier {
     prefs.setString('userData', userData);
   }
 
-  Future<void> _signup(
-      String email, String password) async {
-
+  Future<void> _signup(String email, String password) async {
     final uri = Uri.parse('${AppConst.BASE_URL}/user/register');
     try {
       final response = await http.post(
         uri,
         body: json.encode(
-          {
-            "email": email,
-            "password": password
-          },
+          {"email": email, "password": password},
         ),
       );
-
     } catch (error) {
       throw error;
     }
@@ -152,7 +144,7 @@ class Auth with ChangeNotifier {
 
     final spData = json.decode(response.body);
     if (spData['error'] != null) {
-      if(spData['error'] is String) {
+      if (spData['error'] is String) {
         await signup(email, "Budget@423");
       } else if (spData['error']['description'] != null) {
         await signup(email, "Budget@423");
@@ -166,7 +158,6 @@ class Auth with ChangeNotifier {
   }
 
   Future<bool> tryAutoLogin() async {
-
     print('tryAutoLogin');
 
     final prefs = await SharedPreferences.getInstance();
@@ -175,20 +166,47 @@ class Auth with ChangeNotifier {
       return false;
     }
 
-    final extractedUserData = json.decode(prefs.getString('userData')) as Map<String, Object>;
+    final extractedUserData =
+        json.decode(prefs.getString('userData')) as Map<String, Object>;
     var meta = Map<String, String>.from(extractedUserData['metadata']);
 
-    _token = extractedUserData['token'];
-    _userId = extractedUserData['userId'];
-    _metadata = new Metadata(
-        currentBudget: meta["currentBudget"],
-        language: meta["language"],
-        currency: meta["currency"],
-        themeMode: meta["themeMode"]
-    );
+    if (extractedUserData['token'] == null) {
+      return false;
+    }
 
-    notifyListeners();
-    return true;
+    try {
+      final url = '${AppConst.BASE_URL}/me';
+      final Uri uri = Uri.parse(
+        url,
+      );
+      final response = await http.get(uri, headers: {
+        HttpHeaders.authorizationHeader: extractedUserData['token'],
+      }).timeout(const Duration(seconds: 3));
+
+      if (response.statusCode == 401) {
+        // token invalid, refill username and pwd for user
+        Helper.showMessage("Token expired");
+        return false;
+      }
+
+      _token = extractedUserData['token'];
+      _userId = extractedUserData['userId'];
+      _metadata = new Metadata(
+          currentBudget: meta["currentBudget"],
+          language: meta["language"],
+          currency: meta["currency"],
+          themeMode: meta["themeMode"]);
+      notifyListeners();
+      return true;
+    } on TimeoutException catch (ex) {
+      print(ex);
+      Helper.showMessage("Server is busy");
+      return false;
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   Future<void> logout() async {

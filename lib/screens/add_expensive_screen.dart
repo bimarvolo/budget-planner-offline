@@ -139,11 +139,6 @@ class _AddExpensiveState extends State<AddExpensive> {
                       icon: const Icon(Icons.arrow_downward),
                       iconSize: 24,
                       elevation: 16,
-//                    style: const TextStyle(color: Colors.deepPurple),
-                      underline: Container(
-                        height: 2,
-                        color: Colors.deepPurpleAccent,
-                      ),
                       onChanged: (Category newValue) {
                         setState(() {
                           _categorySelected = newValue;
