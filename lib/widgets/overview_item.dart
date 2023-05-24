@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../providers/categories.dart';
 import '../providers/category.dart';
 
-
 class OverviewItem extends StatefulWidget {
   OverviewItem();
 
@@ -19,7 +18,6 @@ class _OverviewItemState extends State<OverviewItem> {
 
   @override
   Widget build(BuildContext context) {
-
     final categories =
         Provider.of<Categories>(context, listen: true).expensiveCategories;
 
@@ -56,7 +54,13 @@ class _OverviewItemState extends State<OverviewItem> {
   }
 
   List<PieChartSectionData> showingSections(List<Category> categories) {
-    const colors = [Color(0xff0293ee), Color(0xfff8b250), Color(0xff845bef), Color(0xff13d38e), Color(0xff845bef)];
+    const colors = [
+      Color(0xff0293ee),
+      Color(0xfff8b250),
+      Color(0xff845bef),
+      Color(0xff13d38e),
+      Color(0xff845bef)
+    ];
     return List.generate(categories.length, (i) {
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 15.0 : 13.0;
@@ -71,11 +75,14 @@ class _OverviewItemState extends State<OverviewItem> {
         title: '${cate.totalSpent} \$',
         radius: radius,
         titleStyle: TextStyle(
-            fontSize: fontSize, fontWeight: FontWeight.bold, color: const Color(0xffffffff)),
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xffffffff)),
         badgeWidget: _Badge(
           cate.description,
           size: widgetSize,
           borderColor: colors[i],
+          key: Key(cate.id),
         ),
         badgePositionPercentageOffset: 1.2,
       );
@@ -89,11 +96,11 @@ class _Badge extends StatelessWidget {
   final Color borderColor;
 
   const _Badge(
-      this.title, {
-        Key key,
-        @required this.size,
-        @required this.borderColor,
-      }) : super(key: key);
+    this.title, {
+    required Key key,
+    required this.size,
+    required this.borderColor,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

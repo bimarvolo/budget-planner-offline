@@ -11,12 +11,14 @@ class SpendBar extends StatelessWidget {
 
   SpendBar(this.totalAmount, this.spendingPctOfTotal);
 
-
-
   @override
   Widget build(BuildContext context) {
     // List<Color> colors = [Theme.of(context).backgroundColor, Colors.amber.shade200, Theme.of(context).accentColor];
-    List<Color> colors = [Colors.amber.shade100, Colors.amber.shade400, Colors.amber.shade800];
+    List<Color> colors = [
+      Colors.amber.shade100,
+      Colors.amber.shade400,
+      Colors.amber.shade800
+    ];
     // List<Color> colors = [Colors.deepOrangeAccent[20], Colors.deepOrangeAccent[50], Colors.deepOrangeAccent[80] ];
     // List<Color> colors = [Theme.of(context).backgroundColor, Colors.amber, Theme.of(context).accentColor ];
     var remaining = (1 - spendingPctOfTotal) * totalAmount;
@@ -42,14 +44,18 @@ class SpendBar extends StatelessWidget {
                   duration: Duration(milliseconds: 1000),
                   curve: Curves.easeIn,
                   decoration: BoxDecoration(
-                      color: spendingPctOfTotal > 1 ? colors[2]:
-                        spendingPctOfTotal <= 0.8 ? colors[0] : colors[1],
+                      color: spendingPctOfTotal > 1
+                          ? colors[2]
+                          : spendingPctOfTotal <= 0.8
+                              ? colors[0]
+                              : colors[1],
                       borderRadius: BorderRadius.circular(10)),
                 ),
                 Center(
-                  child: Text(remaining >= 0 ?
-                  '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, remaining)} ${AppLocalizations.of(context).remaining}'
-                      : '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, remaining * -1)} ${AppLocalizations.of(context).overSpent}',
+                  child: Text(
+                    remaining >= 0
+                        ? '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, remaining)} ${AppLocalizations.of(context)!.remaining}'
+                        : '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, remaining * -1)} ${AppLocalizations.of(context)!.overSpent}',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: Colors.black87),
                   ),

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
 class AppTheme with ChangeNotifier {
-  String themeMode;
-  String language;
+  late String themeMode;
+  late String language;
 
-  AppTheme({
-    this.themeMode,
-    this.language
-  });
+  AppTheme({required this.themeMode, required this.language});
 
   Future<void> setThemeMode(mode) async {
     this.themeMode = mode;
@@ -18,5 +15,4 @@ class AppTheme with ChangeNotifier {
     this.language = lang;
     notifyListeners();
   }
-
 }

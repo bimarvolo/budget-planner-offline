@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class DotWidget extends StatelessWidget {
   const DotWidget({
-    Key key,
+    required Key key,
   }) : super(key: key);
 
   @override

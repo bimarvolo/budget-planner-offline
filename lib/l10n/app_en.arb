@@ -108,5 +108,6 @@
   "other": "other",
   "youAreOffline": "You are offline!",
   "anErrorOccurred": "An error occurred!",
-  "youSpent": "You spent: "
+  "youSpent": "You spent: ",
+  "transactionDate": "Transaction date:"
 }

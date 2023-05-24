@@ -14,38 +14,36 @@ class IncomeItem extends StatelessWidget {
 
   _onDeleteIncome(ctx, Category income) async {
     try {
-      bool isDeleted = await Provider.of<Categories>(ctx, listen: false).deleteCategory(income.id);
+      bool isDeleted = await Provider.of<Categories>(ctx, listen: false)
+          .deleteCategory(income);
 
-      if(isDeleted) {
-        final snackBar = SnackBar(content: Text(AppLocalizations
-            .of(ctx)
-            .msgRemoveIncomeSuccess));
+      if (isDeleted) {
+        final snackBar = SnackBar(
+            content: Text(AppLocalizations.of(ctx)!.msgRemoveIncomeSuccess));
         ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
         Navigator.of(ctx).pop(true);
       } else {
-        final snackBar = SnackBar(content: Text(AppLocalizations
-            .of(ctx)
-            .msgRemoveIncomeFailed));
+        final snackBar = SnackBar(
+            content: Text(AppLocalizations.of(ctx)!.msgRemoveIncomeFailed));
         ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
         Navigator.of(ctx).pop(false);
       }
-
-    } catch(error) {
+    } catch (error) {
       Navigator.of(ctx).pop(false);
-      Helper.showPopup(ctx, error, AppLocalizations.of(ctx).msgRemoveIncomeFailed);
+      Helper.showPopup(
+          ctx, error, AppLocalizations.of(ctx)!.msgRemoveIncomeFailed);
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
 //    print(totalSpent);
+    var i18n = AppLocalizations.of(context)!;
     return Card(
       elevation: 6,
       margin: EdgeInsets.all(10),
       child: GestureDetector(
-        onTap: () => {
-        },
+        onTap: () => {},
         child: Dismissible(
           key: ValueKey(income.id),
           direction: DismissDirection.endToStart,
@@ -54,16 +52,15 @@ class IncomeItem extends StatelessWidget {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text(AppLocalizations.of(context).confirm),
-                  content: Text(AppLocalizations.of(context).areYouSureYouWishToDeleteThisItem),
+                  title: Text(i18n.confirm),
+                  content: Text(i18n.areYouSureYouWishToDeleteThisItem),
                   actions: <Widget>[
                     TextButton(
                         onPressed: () => _onDeleteIncome(context, income),
-                        child: Text(AppLocalizations.of(context).delete)
-                    ),
+                        child: Text(i18n.delete)),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: Text(AppLocalizations.of(context).cancel),
+                      child: Text(i18n.cancel),
                     ),
                   ],
                 );
@@ -72,15 +69,28 @@ class IncomeItem extends StatelessWidget {
           },
           background: Container(
             color: Theme.of(context).errorColor,
-            child: Icon(Icons.delete, color: Colors.white, size: 35,),
+            child: Icon(
+              Icons.delete,
+              color: Colors.white,
+              size: 35,
+            ),
             alignment: Alignment.centerRight,
             padding: EdgeInsets.only(right: 20),
           ),
           child: Container(
             child: ListTile(
-              title: Text(income.description, style: TextStyle(fontWeight: FontWeight.bold),),
-              subtitle: Text('${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, income.volume)}', style: TextStyle(fontWeight: FontWeight.bold),),
-              leading: Icon(income.iconData, color: Theme.of(context).accentColor,),
+              title: Text(
+                income.description,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, income.volume)}',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              leading: Icon(
+                income.iconData,
+                color: Theme.of(context).accentColor,
+              ),
             ),
           ),
         ),

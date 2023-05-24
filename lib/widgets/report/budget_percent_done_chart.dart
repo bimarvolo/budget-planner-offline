@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:charts_common/common.dart' as common;
 import '../../helpers/helper.dart';
 
 class StackedHorizontalBarChart extends StatelessWidget {
-  final List<charts.Series> seriesList;
+  List<common.Series<dynamic, String>> seriesList;
   final bool animate;
-  final num fontSize = 11;
+  final int fontSize = 11;
 
-  StackedHorizontalBarChart(this.seriesList, {this.animate});
+  StackedHorizontalBarChart(this.seriesList, {required this.animate});
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +23,16 @@ class StackedHorizontalBarChart extends StatelessWidget {
               // Tick and Label styling here.
               labelStyle: new charts.TextStyleSpec(
                   fontSize: fontSize, // size in Pts.
-                  color: Helper.getChartColor(Colors.grey)
-              ),
+                  color: Helper.getChartColor(Colors.grey)),
               // Change the line colors to match text color.
               lineStyle: new charts.LineStyleSpec(
-                  color: Helper.getChartColor(Colors.grey)
-              ))),
+                  color: Helper.getChartColor(Colors.grey)))),
+
       /// Assign a custom style for the measure axis.
       primaryMeasureAxis: new charts.NumericAxisSpec(
           renderSpec: new charts.GridlineRendererSpec(
 
-            // Tick and Label styling here.
+              // Tick and Label styling here.
               labelStyle: new charts.TextStyleSpec(
                   fontSize: fontSize, // size in Pts.
                   color: Helper.getChartColor(Colors.grey)),

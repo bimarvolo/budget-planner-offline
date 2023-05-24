@@ -55,14 +55,14 @@ class Helper {
     String message = defaultMessage;
     try {
       if (error?.osError?.errorCode == 7) {
-        message = AppLocalizations.of(context).youAreOffline;
+        message = AppLocalizations.of(context)!.youAreOffline;
       }
     } catch (e) {}
 
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context).anErrorOccurred),
+        title: Text(AppLocalizations.of(context)!.anErrorOccurred),
         content: Text(message),
         actions: <Widget>[
           TextButton(

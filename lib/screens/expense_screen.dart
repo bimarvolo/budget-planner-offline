@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:money_budget_frontend/helpers/helper.dart';
-import 'package:money_budget_frontend/providers/budgets.dart';
-import 'package:money_budget_frontend/providers/categories.dart';
-import 'package:money_budget_frontend/widgets/category_item.dart';
-import 'package:money_budget_frontend/widgets/category_widget.dart';
-import 'package:money_budget_frontend/widgets/income_item.dart';
+import 'package:hive/hive.dart';
+import '../helpers/helper.dart';
+import '../providers/budget.dart';
+import '../providers/categories.dart';
+import '../providers/category.dart';
+import '../widgets/category_item.dart';
+import '../widgets/category_widget.dart';
+import '../widgets/income_item.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:recase/recase.dart';
 import '../providers/metadata.dart';
-import '../providers/auth.dart';
 import 'add_budget_screen.dart';
 
 class Expense extends StatefulWidget {
-  static const routeName = '/account';
+  static const routeName = '/expense';
 
   @override
   _ExpenseState createState() => _ExpenseState();
@@ -23,21 +24,29 @@ class Expense extends StatefulWidget {
 class _ExpenseState extends State<Expense> {
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<Auth>(context, listen: true);
+    var i18n = AppLocalizations.of(context)!;
     var metaData = Provider.of<Metadata>(context, listen: true);
 
-    final expensiveCates =
-        Provider.of<Categories>(context, listen: true).expensiveCategories;
+    var budgetIndex = metaData.currentBudget;
+    Box<Budget> budgetBox = Hive.box<Budget>('budgets');
+    Budget? curentBudget;
 
-    final incomes =
-        Provider.of<Categories>(context, listen: true).incomeCategories;
-    final budgeted = expensiveCates.fold(0, (i, el) {
+    List<Category> expensiveCates = [];
+    List<Category> incomes = [];
+    Provider.of<Categories>(context, listen: true).incomeCategories;
+
+    if (budgetIndex != null) {
+      curentBudget = budgetBox.getAt(budgetIndex);
+      expensiveCates = curentBudget!.categories;
+    }
+
+    final budgeted = expensiveCates.fold<double>(0, (i, el) {
       return i + el.volume;
     });
-    final expenditure = expensiveCates.fold(0, (i, el) {
+    final expenditure = expensiveCates.fold<double>(0, (i, el) {
       return i + el.totalSpent;
     });
-    final totalIncomes = incomes.fold(0, (i, el) {
+    final totalIncomes = incomes.fold<double>(0, (i, el) {
       return i + el.volume;
     });
     final remainingToSpend = budgeted - expenditure;
@@ -48,31 +57,32 @@ class _ExpenseState extends State<Expense> {
         padding: EdgeInsets.all(10),
         child: SingleChildScrollView(
           child: Column(children: [
-            if (metaData.currentBudget == null)
+            if (curentBudget == null)
               Container(
                   alignment: Alignment.topCenter,
                   padding: EdgeInsets.only(top: 20),
                   child: Column(children: [
                     Text(
-                      AppLocalizations.of(context).youDoNotHaveBudgets,
+                      i18n.youDoNotHaveBudgets,
                     ),
                     SizedBox(
                       height: 20,
                     ),
                     ElevatedButton(
-                      child: Text(AppLocalizations.of(context).createFirstBudget),
-                      onPressed: () =>
-                          {Navigator.of(context).pushNamed(AddBudget.routeName)},
+                      child: Text(i18n.createFirstBudget),
+                      onPressed: () => {
+                        Navigator.of(context).pushNamed(AddBudget.routeName)
+                      },
                     )
                   ])),
-            if (metaData.currentBudget != null && expensiveCates.length == 0)
+            if (curentBudget != null && expensiveCates.length == 0)
               Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Text(
-                  AppLocalizations.of(context).useButtonToCreateCategories,
+                  i18n.useButtonToCreateCategories,
                   style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),
                 ),
               ]),
-            if (metaData.currentBudget != null && expensiveCates.length > 0)
+            if (curentBudget != null && expensiveCates.length > 0)
               Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -85,32 +95,22 @@ class _ExpenseState extends State<Expense> {
                           children: [
                             CateWidget(
                                 '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, totalIncomes)}',
-                                new ReCase(
-                                        AppLocalizations.of(context).netIncomes)
-                                    .titleCase),
+                                new ReCase(i18n.netIncomes).titleCase),
                             CateWidget(
                                 '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, budgeted)}',
-                                new ReCase(AppLocalizations.of(context).budgeted)
-                                    .titleCase),
+                                new ReCase(i18n.budgeted).titleCase),
                             CateWidget(
                                 '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, remainingToSpend)}',
-                                new ReCase(AppLocalizations.of(context)
-                                        .remainingToSpend)
-                                    .titleCase),
+                                new ReCase(i18n.remainingToSpend).titleCase),
                             CateWidget(
                                 '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, totalIncomes - expenditure)}',
-                                new ReCase(AppLocalizations.of(context).saving)
-                                    .titleCase),
+                                new ReCase(i18n.saving).titleCase),
                             CateWidget(
                                 '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, expenditure)}',
-                                new ReCase(
-                                        AppLocalizations.of(context).expenditure)
-                                    .titleCase),
+                                new ReCase(i18n.expenditure).titleCase),
                             CateWidget(
                                 '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, totalIncomes - budgeted)}',
-                                new ReCase(AppLocalizations.of(context)
-                                        .provisionalBalance)
-                                    .titleCase),
+                                new ReCase(i18n.provisionalBalance).titleCase),
                           ],
                         ),
                       ),
@@ -124,7 +124,7 @@ class _ExpenseState extends State<Expense> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${AppLocalizations.of(context).expenditure} ${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, expenditure)}',
+                            '${i18n.expenditure} ${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, expenditure)}',
                             style: TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
@@ -141,7 +141,7 @@ class _ExpenseState extends State<Expense> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${AppLocalizations.of(context).incomes} ${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, totalIncomes)}',
+                            '${i18n.incomes} ${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, totalIncomes)}',
                             style: TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),

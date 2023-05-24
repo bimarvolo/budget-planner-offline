@@ -3,11 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:recase/recase.dart';
 
+import '../providers/metadata.dart';
 import '../screens/add_category_screen.dart';
 import '../providers/transaction.dart';
 import '../providers/transactions.dart';
 import '../providers/categories.dart';
 import '../providers/category.dart';
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditExpensive extends StatefulWidget {
   static const routeName = '/expensive-edit';
@@ -22,24 +25,26 @@ class EditExpensive extends StatefulWidget {
 class _EditExpensiveState extends State<EditExpensive> {
   final _form = GlobalKey<FormState>();
   var _newExpensive = Transaction(
-      id: null, categoryId: null, description: '', volume: 0.0, date: null);
+      id: '',
+      description: '',
+      volume: 0.0,
+      date: DateTime(2023));
 
-  Category _categorySelected;
+  Category? _categorySelected;
   DateTime _selectedDate = DateTime.now();
 
   void _onNewCategoryTouch(BuildContext ctx) {
     Navigator.of(ctx).pushNamed(AddCategory.routeName);
   }
 
-  void _saveForm(BuildContext ctx, String oldCateId, String newCateId, Transaction oldTrans) async {
+  void _saveForm(BuildContext ctx, String oldCateId, String newCateId,
+      Transaction oldTrans) async {
+    var isValidated = _form.currentState!.validate();
+    if (!isValidated) return;
 
-    var isValidated = _form.currentState.validate();
-    if(!isValidated) return;
-
-    _form.currentState.save();
+    _form.currentState!.save();
     _newExpensive = Transaction(
         id: oldTrans.id,
-        categoryId: _categorySelected.id,
         description: _newExpensive.description,
         volume: _newExpensive.volume,
         date: _selectedDate);
@@ -48,21 +53,20 @@ class _EditExpensiveState extends State<EditExpensive> {
       await Provider.of<Transactions>(ctx, listen: false)
           .updateTransaction(_newExpensive);
 
-      if(oldCateId != newCateId) {
+      if (oldCateId != newCateId) {
         Provider.of<Categories>(ctx, listen: false)
             .increaseTotalSpent(oldCateId, (-1 * oldTrans.volume));
         Provider.of<Categories>(ctx, listen: false)
             .increaseTotalSpent(newCateId, _newExpensive.volume);
 
-        Provider.of<Transactions>(ctx, listen: false).localDeleteTransaction(_newExpensive.id);
-
+        Provider.of<Transactions>(ctx, listen: false)
+            .localDeleteTransaction(_newExpensive.id);
       } else {
-        Provider.of<Categories>(ctx, listen: false)
-            .increaseTotalSpent(_categorySelected.id, _newExpensive.volume - oldTrans.volume);
+        Provider.of<Categories>(ctx, listen: false).increaseTotalSpent(
+            _categorySelected!.id, _newExpensive.volume - oldTrans.volume);
       }
 
-      final snackBar =
-          SnackBar(content: Text('Expensive has been updated!'));
+      final snackBar = SnackBar(content: Text('Expensive has been updated!'));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
     } catch (error) {
@@ -119,16 +123,15 @@ class _EditExpensiveState extends State<EditExpensive> {
 
   @override
   Widget build(BuildContext context) {
-
     List<Category> categories =
         Provider.of<Categories>(context, listen: false).expensiveCategories;
 
-    Transaction trans =
-    Provider.of<Transactions>(context, listen: false).findById(widget.expensiveId);
+    Transaction trans = Provider.of<Transactions>(context, listen: false)
+        .findById(widget.expensiveId);
 
-    if(_categorySelected == null) {
-      _categorySelected =
-          categories.firstWhere((cate) => cate.id == trans.categoryId);
+    if (_categorySelected == null) {
+      // _categorySelected =
+      //     categories.firstWhere((cate) => cate.id == trans.categoryId);
     }
 
     return Scaffold(
@@ -139,7 +142,7 @@ class _EditExpensiveState extends State<EditExpensive> {
             icon: Icon(Icons.save),
             color: Theme.of(context).accentColor,
             iconSize: 40,
-            onPressed: () => _saveForm(context, trans.categoryId, _categorySelected.id, trans),
+            onPressed: () => null,
           ),
         ],
       ),
@@ -166,7 +169,7 @@ class _EditExpensiveState extends State<EditExpensive> {
                         // color: Colors.deepPurpleAccent,
                         color: Theme.of(context).accentColor,
                       ),
-                      onChanged: (Category newValue) {
+                      onChanged: (Category? newValue) {
                         setState(() {
                           _categorySelected = newValue;
                         });
@@ -184,7 +187,10 @@ class _EditExpensiveState extends State<EditExpensive> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: IconButton(
-                      icon: Icon(Icons.add_circle_outline, color: Theme.of(context).accentColor,),
+                      icon: Icon(
+                        Icons.add_circle_outline,
+                        color: Theme.of(context).accentColor,
+                      ),
                       iconSize: 30,
                       onPressed: () => _onNewCategoryTouch(context),
                     ),
@@ -192,31 +198,25 @@ class _EditExpensiveState extends State<EditExpensive> {
                 ],
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Description'),
-                textInputAction: TextInputAction.next,
-                initialValue: trans.description,
-                validator: (value) {
-                  if (value.isEmpty) return 'please provide description!';
-                  return null;
-                },
-                onSaved: (value) {
-                  _newExpensive = Transaction(
-                    description: value,
-                    volume: _newExpensive.volume,
-                    id: trans.id,
-                    date: trans.date,
-                    categoryId: _categorySelected.id,
-                  );
-                },
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Amount'),
+                cursorColor: Theme.of(context).accentColor,
+                decoration: InputDecoration(
+                    labelText: 'Amount',
+                    labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).accentColor,
+                      ),
+                    ),
+                    prefix: Text(
+                        Provider.of<Metadata>(context, listen: false).currency!,
+                        style: TextStyle(fontSize: 18))),
                 textInputAction: TextInputAction.done,
                 initialValue: trans.volume.toString(),
                 validator: (value) {
-                  if (value.isEmpty) return 'please provide a amount!';
+                  if (value != null && value.isEmpty)
+                    return 'please provide a amount!';
 
-                  if (double.tryParse(value) == null)
+                  if (double.tryParse(value!) == null)
                     return 'please enter a valid number!';
 
                   if (double.parse(value) <= 0)
@@ -227,28 +227,51 @@ class _EditExpensiveState extends State<EditExpensive> {
                 keyboardType: TextInputType.number,
                 onSaved: (value) {
                   _newExpensive = Transaction(
-                    volume: double.parse(value),
-                    description: _newExpensive.description,
+                      volume: double.parse(value!),
+                      description: _newExpensive.description,
+                      id: trans.id,
+                      date: trans.date);
+                },
+              ),
+              TextFormField(
+                cursorColor: Theme.of(context).accentColor,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Theme.of(context).accentColor,
+                    ),
+                  ),
+                ),
+                textInputAction: TextInputAction.next,
+                initialValue: trans.description,
+                onSaved: (value) {
+                  _newExpensive = Transaction(
+                    description: value,
+                    volume: _newExpensive.volume,
                     id: trans.id,
                     date: trans.date,
-                    categoryId: _categorySelected.id
                   );
                 },
               ),
-              SizedBox(height: 20,),
+              SizedBox(
+                height: 20,
+              ),
               Text('Transaction date: '),
               Container(
                 height: 70,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Expanded(
                       child: OutlinedButton(
-//                      textColor: Theme.of(context).primaryColor,
                         child: Text(
                           _selectedDate == null
                               ? 'No Date Chosen!'
                               : '${DateFormat.yMd().format(_selectedDate)}',
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
                         ),
                         onPressed: _presentDatePicker,
                       ),
@@ -259,9 +282,8 @@ class _EditExpensiveState extends State<EditExpensive> {
                           _selectedDate == null
                               ? 'No Time Chosen!'
                               : '${DateFormat.Hm().format(_selectedDate)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
                         ),
                         onPressed: _presentTimePicker,
                       ),
@@ -269,6 +291,18 @@ class _EditExpensiveState extends State<EditExpensive> {
                   ],
                 ),
               ),
+              Container(
+                  alignment: Alignment.topCenter,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                            width: 1.3, color: Theme.of(context).accentColor),
+                        padding: EdgeInsets.symmetric(horizontal: 30),
+                        foregroundColor: Theme.of(context).accentColor),
+                    onPressed: () => null,
+                    icon: Icon(Icons.save, size: 24.0),
+                    label: Text(AppLocalizations.of(context)!.save), // <-- Text
+                  ))
             ],
           ),
         ),

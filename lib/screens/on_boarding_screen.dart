@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
-import 'package:money_budget_frontend/screens/overview_screen.dart';
+import '../screens/overview_screen.dart';
 
 class OnBoardingPage extends StatefulWidget {
   @override

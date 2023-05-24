@@ -7,37 +7,23 @@ import 'dart:io';
 import '../app_constant.dart';
 
 class Metadata with ChangeNotifier {
-  String currentBudget;
-  String language;
-  String currency;
-  String themeMode;
-  String userId;
-  String token;
+  int? currentBudget;
+  String? language;
+  String? currency = 'en';
+  String? themeMode;
 
-  Metadata({
-    this.currentBudget,
-    this.language,
-    this.currency,
-    this.themeMode,
-    this.userId,
-    this.token
-  });
+  Metadata({this.currentBudget, this.language, this.currency, this.themeMode});
 
-  Map<String, String> toJson() {
+  Map<String, String?> toJson() {
     return {
-      'currentBudget': this.currentBudget,
+      'currentBudget': this.currentBudget.toString(),
       'language': this.language,
       'currency': this.currency,
       'themeMode': this.themeMode,
     };
   }
 
-  setAuth(String userId, String token) {
-    this.userId = userId;
-    this.token = token;
-  }
-
-  syncMetadata(lang, cu, curentB, theme){
+  syncMetadata(lang, cu, curentB, theme) {
     this.language = lang;
     this.currency = cu;
     this.currentBudget = curentB;
@@ -47,25 +33,25 @@ class Metadata with ChangeNotifier {
 
   setLanguage(lang, {isSave = true}) async {
     this.language = lang;
-    if(isSave) await saveMetadata();
+    if (isSave) await saveMetadata();
     notifyListeners();
   }
 
   setCurrentBudget(budget, {isSave = true}) async {
     this.currentBudget = budget;
-    if(isSave) await saveMetadata();
+    if (isSave) await saveMetadata();
     notifyListeners();
   }
 
   setCurrency(cu, {isSave = true}) async {
     this.currency = cu;
-    if(isSave) await saveMetadata();
+    if (isSave) await saveMetadata();
     notifyListeners();
   }
 
   Future<void> setThemeMode(mode, {isSave = true}) async {
     this.themeMode = mode;
-    if(isSave) await saveMetadata();
+    if (isSave) await saveMetadata();
     notifyListeners();
   }
 
@@ -75,26 +61,10 @@ class Metadata with ChangeNotifier {
   }
 
   Future<void> saveMetadata() async {
-    final url = '${AppConst.BASE_URL}/user/${this.userId}';
     try {
-      var res = await http.patch(Uri.parse(url),
-          headers: { HttpHeaders.authorizationHeader: this.token, },
-          body: json.encode({
-            'metadata': {
-              'language': this.language,
-              'currency': this.currency,
-              'currentBudget': this.currentBudget,
-              'themeMode': this.themeMode
-            },
-          }));
-      var a = json.encode(res.body);
-      print(a);
-
       final prefs = await SharedPreferences.getInstance();
       final userData = json.encode(
         {
-          'token': this.token,
-          'userId': this.userId,
           'metadata': new Metadata(
             currentBudget: this.currentBudget,
             language: this.language,
@@ -108,5 +78,4 @@ class Metadata with ChangeNotifier {
       print(err);
     }
   }
-
 }

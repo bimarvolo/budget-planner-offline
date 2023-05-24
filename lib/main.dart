@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 import './providers/metadata.dart';
-import './providers/auth.dart';
 import './providers/budgets.dart';
 import './providers/transactions.dart';
 import './providers/categories.dart';
 
 import './screens/overview_screen.dart';
-import './screens/auth_screen.dart';
 import './screens/all_budgets_screen.dart';
 import './screens/add_category_screen.dart';
 import './screens/add_expensive_screen.dart';
@@ -17,48 +17,44 @@ import './screens/edit_expensive_screen.dart';
 import './screens/list_transactions_screen.dart';
 import './screens/add_budget_screen.dart';
 import './widgets/jumping_dots.dart';
+import 'providers/transaction.dart';
+import 'providers/category.dart';
+import 'providers/budget.dart';
 
+void main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(TransactionAdapter());
+  Hive.registerAdapter(CategoryAdapter());
+  Hive.registerAdapter(BudgetAdapter());
 
-void main() => runApp(MyApp());
+  await Hive.openBox('metadata');
+
+  final box = await Hive.openBox<Budget>('budgets');
+  // box.clear();
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(
-          value: Auth(),
-        ),
-
-        ChangeNotifierProxyProvider<Auth, Metadata>(
+        ChangeNotifierProvider<Metadata>(
           create: (BuildContext context) => Metadata(),
-          update: (BuildContext context, Auth auth, Metadata meta) {
-            Metadata metadata = auth.metadata;
-            if(metadata != null) {
-              meta.syncMetadata(metadata.language, metadata.currency, metadata.currentBudget, metadata.themeMode);
-            }
-            if(auth.isAuth)
-              meta.setAuth(auth.userId, auth.token);
-            return meta;
-            },
         ),
-        ChangeNotifierProxyProvider<Auth, Budgets>(
-          create: (BuildContext context) => Budgets(Provider.of<Auth>(context, listen: false).token, Provider.of<Auth>(context, listen: false).userId, []),
-          update: (BuildContext context, Auth auth, Budgets bud) => Budgets(auth.token, auth.userId, bud.items),
+        ChangeNotifierProvider<Budgets>(
+          create: (BuildContext context) => Budgets([]),
         ),
-        ChangeNotifierProxyProvider<Auth, Categories>(
-          create: (BuildContext context) => Categories(Provider.of<Auth>(context, listen: false).token, Provider.of<Auth>(context, listen: false).userId, []),
-          update: (BuildContext context, Auth auth, Categories cate) => Categories(auth.token, auth.userId, cate.items),
+        ChangeNotifierProvider<Categories>(
+          create: (BuildContext context) => Categories([]),
         ),
-        ChangeNotifierProxyProvider<Auth, Transactions>(
-          create: (BuildContext context) => Transactions(Provider.of<Auth>(context, listen: false).token, Provider.of<Auth>(context, listen: false).userId,[] ),
-          update: (BuildContext context, Auth auth, Transactions ex) => Transactions(auth.token, auth.userId, ex.items),
+        ChangeNotifierProvider<Transactions>(
+          create: (BuildContext context) => Transactions([]),
         ),
-
       ],
-      child: Consumer2<Auth, Metadata>(
-        builder: (ctx, auth, metadata, _) => MaterialApp(
+      child: Consumer<Metadata>(
+        builder: (ctx, metadata, _) => MaterialApp(
           title: 'Money budgets',
           localizationsDelegates: [
             AppLocalizations.delegate, // Add this line
@@ -71,51 +67,49 @@ class MyApp extends StatelessWidget {
             Locale('vi', ''),
             Locale('fr', ''),
           ],
-          locale: metadata.language != null ? Locale(metadata.language, '') : null,
-          themeMode: metadata.themeMode == 'DART' ? ThemeMode.dark : metadata.themeMode == 'LIGHT' ? ThemeMode.light : null,
+          locale:
+              metadata.language != null ? Locale(metadata.language!, '') : null,
+          themeMode: metadata.themeMode == 'DART'
+              ? ThemeMode.dark
+              : metadata.themeMode == 'LIGHT'
+                  ? ThemeMode.light
+                  : null,
           theme: ThemeData(
             primarySwatch: Colors.cyan,
             accentColor: Colors.deepOrange,
             fontFamily: 'Lato',
           ),
-          darkTheme: ThemeData.dark(
+          darkTheme: ThemeData.dark(), // Provide dark theme
+          home: FutureBuilder(
+              future: Future.wait([
+                Hive.openBox<Budget>('budgets'),
+                Hive.openBox<Transaction>('transactions')
+              ]),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasError)
+                    return Text(snapshot.error.toString());
+                  else {
+                    var meta = Provider.of<Metadata>(context, listen: false);
+                    if (meta.currency == null) {
+                      meta.setCurrency('\$');
+                    }
 
-          ), // Provide dark theme
-          home: auth.isAuth
-              ?
-          Consumer<Budgets>(
-              builder: (ctxB, budgets, __) {
-                return FutureBuilder(
-                  future: budgets.fetchAndSetBudgets(),
-                  builder: (ctxB, AsyncSnapshot<bool> snapshot) {
-                    return
-                      snapshot.connectionState ==
-                          ConnectionState.waiting && budgets.items.length == 0
-                          ? JumpingDots()
-                      // : OnBoardingPage(),
-                          : OverviewScreen();
+                    return OverviewScreen();
                   }
-                );
-              },
-          )
-              : FutureBuilder(
-            future: auth.tryAutoLogin(),
-            builder: (ctx, authResultSnapshot) {
-              print('authResultSnapshot.connectionState ${authResultSnapshot.connectionState}');
-              if (authResultSnapshot.connectionState ==
-                  ConnectionState.waiting ) return JumpingDots();
-              return AuthScreen();
-            }
-          ),
+                } else
+                  return Scaffold();
+              }),
           routes: {
             AddBudget.routeName: (_) => AddBudget(),
             AddCategory.routeName: (_) => AddCategory(),
             AllBudgets.routeName: (_) => AllBudgets(),
           },
           onGenerateRoute: (RouteSettings settings) {
-            Map<String,String> arg = settings.arguments;
-            String categoryId = arg['id'];
-            String transactionId = arg['id'];
+            Map<String, String>? arg =
+                settings.arguments as Map<String, String>?;
+            String categoryId = arg!['id']!;
+            String transactionId = arg['id']!;
 
             var routes = <String, WidgetBuilder>{
               OverviewScreen.routeName: (_) => OverviewScreen(),
@@ -123,7 +117,7 @@ class MyApp extends StatelessWidget {
               EditExpensive.routeName: (_) => EditExpensive(transactionId),
               ListTransactions.routeName: (_) => ListTransactions(categoryId),
             };
-            WidgetBuilder builder = routes[settings.name];
+            WidgetBuilder builder = routes[settings.name]!;
             return MaterialPageRoute(builder: (ctx) => builder(ctx));
           },
         ),

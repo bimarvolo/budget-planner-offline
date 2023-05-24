@@ -1,11 +1,12 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
+import 'package:charts_common/common.dart' as common;
 
 class CustomRoundedBars extends StatelessWidget {
-  final List<charts.Series> seriesList;
+  List<common.Series<dynamic, String>> seriesList;
   final bool animate;
 
-  CustomRoundedBars(this.seriesList, {this.animate});
+  CustomRoundedBars(this.seriesList, {required this.animate});
 
   /// Creates a [BarChart] with custom rounded bars.
   factory CustomRoundedBars.withSampleData() {

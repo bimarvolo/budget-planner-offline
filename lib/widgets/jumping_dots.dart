@@ -4,7 +4,7 @@ import '../widgets/dot.dart';
 class JumpingDots extends StatefulWidget {
   final int numberOfDots;
 
-  const JumpingDots({Key key, this.numberOfDots = 3}) : super(key: key);
+  const JumpingDots({required Key key, this.numberOfDots = 3}) : super(key: key);
 
   @override
   _JumpingDotsState createState() => _JumpingDotsState();
@@ -12,9 +12,9 @@ class JumpingDots extends StatefulWidget {
 
 class _JumpingDotsState extends State<JumpingDots>
     with TickerProviderStateMixin {
-  List<AnimationController> _animationControllers;
+  late List<AnimationController> _animationControllers;
 
-  List<Animation<double>> _animations = List();
+  List<Animation<double>> _animations = [];
 
   int animationDuration = 200;
 
@@ -96,7 +96,7 @@ class _JumpingDotsState extends State<JumpingDots>
                   //Only Y-axis position will change.
                   child: Transform.translate(
                     offset: Offset(0, _animations[index].value),
-                    child: DotWidget(),
+                    child: DotWidget(key: UniqueKey()),
                   ),
                 );
               },

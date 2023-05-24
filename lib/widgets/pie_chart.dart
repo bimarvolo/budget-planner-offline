@@ -1,4 +1,3 @@
-
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +13,7 @@ class PieOutsideLabelChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new charts.PieChart(seriesList,
+    return new charts.PieChart<num>(seriesList,
         animate: animate,
         defaultRenderer: new charts.ArcRendererConfig(
             arcWidth: 10,
@@ -22,15 +21,10 @@ class PieOutsideLabelChart extends StatelessWidget {
             // arcLength: 3.14,
             startAngle: -3.14,
             arcRendererDecorators: [
-          new charts.ArcLabelDecorator(
-              outsideLabelStyleSpec: TextStyleSpec(
-                  fontSize: 11,
-                  color: this.textColor
-              ),
-              labelPosition: charts.ArcLabelPosition.outside
-          )
-        ]
-        )
-    );
+              new charts.ArcLabelDecorator(
+                  outsideLabelStyleSpec:
+                      TextStyleSpec(fontSize: 11, color: this.textColor),
+                  labelPosition: charts.ArcLabelPosition.outside)
+            ]));
   }
 }

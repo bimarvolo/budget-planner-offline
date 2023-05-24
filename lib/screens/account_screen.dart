@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:money_budget_frontend/providers/budgets.dart';
-import 'package:money_budget_frontend/providers/categories.dart';
+import '../providers/budgets.dart';
+import '../providers/categories.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/metadata.dart';
-import '../providers/auth.dart';
-
+// import '../providers/auth.dart';
 
 enum EAppTheme { AUTO, LIGHT, DART }
 
 class Language {
-  String code;
-  String name;
+  String? code;
+  String? name;
 
   Language({this.code, this.name});
 }
 
 class Currency {
-  String code;
-  String name;
-  Icon icon;
+  String? code;
+  String? name;
+  Icon? icon;
 
   Currency({this.code, this.name, this.icon});
 }
@@ -36,9 +35,9 @@ class _AccountState extends State<Account> {
   EAppTheme _currentTheme = EAppTheme.AUTO;
 
   void _logout(context) {
-    Provider.of<Budgets>(context, listen: false).clearData();
-    Provider.of<Categories>(context, listen: false).clearData();
-    Provider.of<Auth>(context, listen: false).logout();
+    // Provider.of<Budgets>(context, listen: false).clearData();
+    // Provider.of<Categories>(context, listen: false).clearData();
+    // Provider.of<Auth>(context, listen: false).logout();
     // Navigator.of(context).pushReplacementNamed('/');
   }
 
@@ -47,7 +46,7 @@ class _AccountState extends State<Account> {
     new Language(code: 'vi', name: 'Vietnam'),
     new Language(code: 'fr', name: 'France'),
   ];
-  Language _languageSelected;
+  Language? _languageSelected;
 
   List<Currency> _curencies = [
     new Currency(code: '\$', name: 'USD'),
@@ -55,11 +54,11 @@ class _AccountState extends State<Account> {
     new Currency(code: '€', name: 'Euro'),
     // new Currency(code: 'en', name: 'Euro'),
   ];
-  Currency _cuSelected;
+  Currency? _cuSelected;
 
-  _onSelectTheme(EAppTheme theme) {
+  void _onSelectTheme(EAppTheme? theme) {
     setState(() {
-      _currentTheme = theme;
+      _currentTheme = theme!;
     });
     var themName = 'DART';
     if (_currentTheme == EAppTheme.AUTO) themName = 'AUTO';
@@ -68,33 +67,35 @@ class _AccountState extends State<Account> {
     Provider.of<Metadata>(context, listen: false).setThemeMode(themName);
   }
 
-  _onSelectLang(Language lang) {
+  _onSelectLang(Language? lang) {
     setState(() {
       _languageSelected = lang;
     });
     Provider.of<Metadata>(context, listen: false)
-        .setLanguage(_languageSelected.code);
+        .setLanguage(_languageSelected!.code);
     // Provider.of<AppTheme>(context, listen: false).setLanguage(_languageSelected.code);
-    Provider.of<Metadata>(context, listen: false).setLanguage(_languageSelected.code);
+    Provider.of<Metadata>(context, listen: false)
+        .setLanguage(_languageSelected!.code);
   }
 
-  _onSelectCurrency(Currency cu) {
+  _onSelectCurrency(Currency? cu) {
     setState(() {
       _cuSelected = cu;
     });
-    Provider.of<Metadata>(context, listen: false).setCurrency(_cuSelected.code);
+    Provider.of<Metadata>(context, listen: false)
+        .setCurrency(_cuSelected!.code);
   }
 
   _getFlag(lang, ctx) {
     String path = '';
     switch (lang) {
-      case 'en' :
+      case 'en':
         path = 'assets/flags/english_flag.png';
         break;
-      case 'fr' :
+      case 'fr':
         path = 'assets/flags/france_flag.png';
         break;
-      case 'vi' :
+      case 'vi':
         path = 'assets/flags/vietnam_flag.png';
         break;
       default:
@@ -105,10 +106,9 @@ class _AccountState extends State<Account> {
 
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<Auth>(context, listen: true);
+    // var user = Provider.of<Auth>(context, listen: true);
     var metaData = Provider.of<Metadata>(context, listen: true);
     // var appTheme = Provider.of<AppTheme>(context, listen: true);
-
 
     if (metaData.language != null) {
       _languageSelected =
@@ -122,10 +122,8 @@ class _AccountState extends State<Account> {
 
     if (metaData.themeMode != null) {
       _currentTheme = EAppTheme.DART;
-      if (metaData.themeMode == 'AUTO')
-        _currentTheme = EAppTheme.AUTO;
-      if (metaData.themeMode == 'LIGHT')
-        _currentTheme = EAppTheme.LIGHT;
+      if (metaData.themeMode == 'AUTO') _currentTheme = EAppTheme.AUTO;
+      if (metaData.themeMode == 'LIGHT') _currentTheme = EAppTheme.LIGHT;
     }
 
     return Container(
@@ -139,26 +137,27 @@ class _AccountState extends State<Account> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${AppLocalizations.of(context).account} ${user.userId}'),
-                SizedBox(
-                  height: 10,
-                ),
-                Text('${AppLocalizations.of(context).appearances}'),
+                // Text('${AppLocalizations.of(context)!.account} ${user.email}'),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                Text('${AppLocalizations.of(context)!.appearances}'),
                 RadioListTile<EAppTheme>(
-                  title: Text(AppLocalizations.of(context).dartMode),
+                  title: Text(AppLocalizations.of(context)!.dartMode),
                   value: EAppTheme.DART,
                   groupValue: _currentTheme,
                   onChanged: _onSelectTheme,
                 ),
                 RadioListTile<EAppTheme>(
-                    title: Text(AppLocalizations.of(context).lightMode),
+                    title: Text(AppLocalizations.of(context)!.lightMode),
                     value: EAppTheme.LIGHT,
                     groupValue: _currentTheme,
                     onChanged: _onSelectTheme),
                 RadioListTile<EAppTheme>(
-                    title: Text(AppLocalizations.of(context).useDeviceSettings),
-                    subtitle: Text(
-                      AppLocalizations.of(context).useDeviceSettingsDescription),
+                    title:
+                        Text(AppLocalizations.of(context)!.useDeviceSettings),
+                    subtitle: Text(AppLocalizations.of(context)!
+                        .useDeviceSettingsDescription),
                     value: EAppTheme.AUTO,
                     groupValue: _currentTheme,
                     onChanged: _onSelectTheme),
@@ -168,7 +167,7 @@ class _AccountState extends State<Account> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(AppLocalizations.of(context).language),
+                    Text(AppLocalizations.of(context)!.language),
                     Expanded(
                       child: DropdownButton<Language>(
                         isExpanded: true,
@@ -176,13 +175,13 @@ class _AccountState extends State<Account> {
                         icon: const Icon(Icons.arrow_downward),
                         iconSize: 24,
                         elevation: 16,
-                        underline: Container(
-                          height: 2,
-                          color: Colors.deepPurpleAccent,
-                        ),
+                        // underline: Container(
+                        //   height: 2,
+                        //   color: Colors.deepPurpleAccent,
+                        // ),
                         onChanged: _onSelectLang,
-                        items: _langs.map<DropdownMenuItem<Language>>(
-                            (Language value) {
+                        items: _langs
+                            .map<DropdownMenuItem<Language>>((Language value) {
                           return DropdownMenuItem<Language>(
                             value: value,
                             child: Row(
@@ -203,7 +202,7 @@ class _AccountState extends State<Account> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(AppLocalizations.of(context).currency),
+                    Text(AppLocalizations.of(context)!.currency),
                     Expanded(
                       child: DropdownButton<Currency>(
                         isExpanded: true,
@@ -211,10 +210,10 @@ class _AccountState extends State<Account> {
                         icon: const Icon(Icons.arrow_downward),
                         iconSize: 24,
                         elevation: 16,
-                        underline: Container(
-                          height: 2,
-                          color: Colors.deepPurpleAccent,
-                        ),
+                        // underline: Container(
+                        //   height: 2,
+                        //   color: Colors.deepPurpleAccent,
+                        // ),
                         onChanged: _onSelectCurrency,
                         items: _curencies
                             .map<DropdownMenuItem<Currency>>((Currency value) {
@@ -230,17 +229,24 @@ class _AccountState extends State<Account> {
                 SizedBox(
                   height: 30,
                 ),
-                Text(AppLocalizations.of(context).aboutUs),
-                SizedBox(height: 5,),
-                Text(' ${AppLocalizations.of(context).contact} Vin XO'),
-                SizedBox(height: 5,),
-                Text('${AppLocalizations.of(context).email}: vinhpx.dev@gmail.com'),
+                Text(AppLocalizations.of(context)!.aboutUs),
+                SizedBox(
+                  height: 5,
+                ),
+                Text('${AppLocalizations.of(context)!.contact} Vin XO'),
+                SizedBox(
+                  height: 5,
+                ),
+                Text(
+                    '${AppLocalizations.of(context)!.email}: vinhpx.dev@gmail.com'),
               ],
             ),
             Container(
                 alignment: Alignment.topCenter,
                 child: ElevatedButton(
-                  child: Text( AppLocalizations.of(context).signOut,),
+                  child: Text(
+                    AppLocalizations.of(context)!.signOut,
+                  ),
                   onPressed: () => _logout(context),
                 ))
           ],

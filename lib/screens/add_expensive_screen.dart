@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:money_budget_frontend/helpers/helper.dart';
+import '../helpers/helper.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../providers/metadata.dart';
 import '../screens/add_category_screen.dart';
 import '../providers/transaction.dart';
 import '../providers/transactions.dart';
@@ -23,9 +25,12 @@ class AddExpensive extends StatefulWidget {
 class _AddExpensiveState extends State<AddExpensive> {
   final _form = GlobalKey<FormState>();
   var _newExpensive = Transaction(
-      id: null, categoryId: null, description: '', volume: 0.0, date: null);
+      id: '',
+      description: '',
+      volume: 0.0,
+      date: DateTime(2023));
 
-  Category _categorySelected;
+  Category? _categorySelected;
   DateTime _selectedDate = DateTime.now();
 
   void _onNewCategoryTouch(BuildContext ctx) {
@@ -33,13 +38,14 @@ class _AddExpensiveState extends State<AddExpensive> {
   }
 
   void _saveForm(BuildContext ctx) async {
-    var isValidated = _form.currentState.validate();
+    var isValidated = _form.currentState!.validate();
     if (!isValidated) return;
+    var uuid = Uuid();
 
-    _form.currentState.save();
+
+    _form.currentState!.save();
     _newExpensive = Transaction(
-        id: null,
-        categoryId: _categorySelected.id,
+        id: uuid.v4(),
         description: _newExpensive.description,
         volume: _newExpensive.volume,
         date: _selectedDate);
@@ -49,16 +55,16 @@ class _AddExpensiveState extends State<AddExpensive> {
           .addTransaction(_newExpensive);
 
       Provider.of<Categories>(ctx, listen: false)
-          .increaseTotalSpent(_categorySelected.id, _newExpensive.volume);
+          .increaseTotalSpent(_categorySelected!.id, _newExpensive.volume);
 
       final snackBar = SnackBar(
-          content: Text(AppLocalizations.of(context).msgCreateExpenseSuccess));
+          content: Text(AppLocalizations.of(context)!.msgCreateExpenseSuccess));
 
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
     } catch (error) {
       Helper.showPopup(
-          ctx, error, AppLocalizations.of(context).msgCreateExpenseFailed);
+          ctx, error, AppLocalizations.of(context)!.msgCreateExpenseFailed);
     }
   }
 
@@ -111,16 +117,16 @@ class _AddExpensiveState extends State<AddExpensive> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Expensive'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.save,
-              color: Theme.of(context).accentColor,
-            ),
-            iconSize: 40,
-            onPressed: () => _saveForm(context),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(
+        //       Icons.save,
+        //       color: Theme.of(context).accentColor,
+        //     ),
+        //     iconSize: 40,
+        //     onPressed: () => _saveForm(context),
+        //   ),
+        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -139,7 +145,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                       icon: const Icon(Icons.arrow_downward),
                       iconSize: 24,
                       elevation: 16,
-                      onChanged: (Category newValue) {
+                      onChanged: (Category? newValue) {
                         setState(() {
                           _categorySelected = newValue;
                         });
@@ -173,12 +179,24 @@ class _AddExpensiveState extends State<AddExpensive> {
               ),
               TextFormField(
                 autofocus: widget.categoryId != null,
-                decoration: InputDecoration(labelText: 'Amount'),
+                cursorColor: Theme.of(context).accentColor,
+                decoration: InputDecoration(
+                    labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                    labelText: 'Amount',
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).accentColor,
+                      ),
+                    ),
+                    prefix: Text(
+                        Provider.of<Metadata>(context, listen: false).currency!,
+                        style: TextStyle(fontSize: 18))),
                 textInputAction: TextInputAction.done,
                 validator: (value) {
-                  if (value.isEmpty) return 'please provide a amount!';
+                  if (value != null && value.isEmpty)
+                    return 'please provide a amount!';
 
-                  if (double.tryParse(value) == null)
+                  if (double.tryParse(value!) == null)
                     return 'please enter a valid number!';
 
                   if (double.parse(value) <= 0)
@@ -189,27 +207,30 @@ class _AddExpensiveState extends State<AddExpensive> {
                 keyboardType: TextInputType.number,
                 onSaved: (value) {
                   _newExpensive = Transaction(
-                    volume: double.parse(value),
-                    description: _newExpensive.description,
-                    id: null,
-                    date: null,
-                    categoryId:
-                        _categorySelected != null ? _categorySelected.id : null,
-                  );
+                      volume: double.parse(value!),
+                      description: _newExpensive.description,
+                      id: '',
+                      date: DateTime(2023));
                 },
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Description'),
+                cursorColor: Theme.of(context).accentColor,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Theme.of(context).accentColor,
+                    ),
+                  ),
+                ),
                 textInputAction: TextInputAction.next,
                 onSaved: (value) {
                   _newExpensive = Transaction(
-                    description: value,
-                    volume: _newExpensive.volume,
-                    id: null,
-                    date: null,
-                    categoryId:
-                        _categorySelected != null ? _categorySelected.id : null,
-                  );
+                      description: value,
+                      volume: _newExpensive.volume,
+                      id: '',
+                      date: DateTime(2023));
                 },
               ),
               SizedBox(
@@ -228,6 +249,9 @@ class _AddExpensiveState extends State<AddExpensive> {
                           _selectedDate == null
                               ? 'No Date Chosen!'
                               : '${DateFormat.yMd().format(_selectedDate)}',
+                          style: TextStyle(
+                            color: Theme.of(context).accentColor,
+                          ),
                         ),
                         onPressed: _presentDatePicker,
                       ),
@@ -239,7 +263,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                               ? 'No Time Chosen!'
                               : '${DateFormat.Hm().format(_selectedDate)}',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).accentColor,
                           ),
                         ),
                         onPressed: _presentTimePicker,
@@ -248,6 +272,18 @@ class _AddExpensiveState extends State<AddExpensive> {
                   ],
                 ),
               ),
+              Container(
+                  alignment: Alignment.topCenter,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                            width: 1.3, color: Theme.of(context).accentColor),
+                        padding: EdgeInsets.symmetric(horizontal: 30),
+                        foregroundColor: Theme.of(context).accentColor),
+                    onPressed: () => _saveForm(context),
+                    icon: Icon(Icons.save, size: 24.0),
+                    label: Text(AppLocalizations.of(context)!.save), // <-- Text
+                  ))
             ],
           ),
         ),

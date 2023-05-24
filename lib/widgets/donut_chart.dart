@@ -5,7 +5,7 @@ class DonutPieChart extends StatelessWidget {
   final List<charts.Series> seriesList;
   final bool animate;
 
-  DonutPieChart(this.seriesList, {this.animate});
+  DonutPieChart(this.seriesList, {required this.animate});
 
   /// Creates a [PieChart] with sample data and no transition.
   factory DonutPieChart.withSampleData() {
@@ -15,7 +15,6 @@ class DonutPieChart extends StatelessWidget {
       animate: false,
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
