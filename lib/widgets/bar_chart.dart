@@ -1,6 +1,7 @@
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
-import 'package:charts_common/common.dart' as common;
+import 'package:community_charts_flutter/community_charts_flutter.dart'
+    as charts;
+import 'package:community_charts_common/community_charts_common.dart' as common;
 
 class CustomRoundedBars extends StatelessWidget {
   List<common.Series<dynamic, String>> seriesList;
@@ -17,17 +18,16 @@ class CustomRoundedBars extends StatelessWidget {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return new charts.BarChart(
       seriesList,
       animate: animate,
       defaultRenderer: new charts.BarRendererConfig(
-        // By default, bar renderer will draw rounded bars with a constant
-        // radius of 100.
-        // To not have any rounded corners, use [NoCornerStrategy]
-        // To change the radius of the bars, use [ConstCornerStrategy]
+          // By default, bar renderer will draw rounded bars with a constant
+          // radius of 100.
+          // To not have any rounded corners, use [NoCornerStrategy]
+          // To change the radius of the bars, use [ConstCornerStrategy]
           cornerStrategy: const charts.NoCornerStrategy()),
     );
   }

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
-import '../helpers/helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../providers/metadata.dart';
+import '../hive/metadata_storage.dart';
+import '../helpers/helper.dart';
+import '../providers/budget.dart';
 import '../screens/add_category_screen.dart';
 import '../providers/transaction.dart';
 import '../providers/transactions.dart';
 import '../providers/categories.dart';
 import '../providers/category.dart';
 
+/// Represents a screen for adding an expense.
+/// This screen is used to input and save information about a new expense.
+/// It is a stateful widget, allowing for dynamic updates based on user input.
 class AddExpensive extends StatefulWidget {
   static const routeName = '/expensive-add';
 
@@ -26,6 +31,7 @@ class _AddExpensiveState extends State<AddExpensive> {
   final _form = GlobalKey<FormState>();
   var _newExpensive = Transaction(
       id: '',
+      categoryId: "",
       description: '',
       volume: 0.0,
       date: DateTime(2023));
@@ -37,15 +43,24 @@ class _AddExpensiveState extends State<AddExpensive> {
     Navigator.of(ctx).pushNamed(AddCategory.routeName);
   }
 
-  void _saveForm(BuildContext ctx) async {
+  /// Saves the form data and updates the budget.
+  ///
+  /// This method takes the [BuildContext] and [currentBudget] as parameters.
+  /// It is an asynchronous method that saves the form data and updates the budget.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// _saveForm(context, currentBudget);
+  /// ```
+  void _saveForm(BuildContext ctx, int currentBudget) async {
     var isValidated = _form.currentState!.validate();
     if (!isValidated) return;
     var uuid = Uuid();
 
-
     _form.currentState!.save();
     _newExpensive = Transaction(
         id: uuid.v4(),
+        categoryId: _categorySelected!.id,
         description: _newExpensive.description,
         volume: _newExpensive.volume,
         date: _selectedDate);
@@ -54,11 +69,25 @@ class _AddExpensiveState extends State<AddExpensive> {
       await Provider.of<Transactions>(ctx, listen: false)
           .addTransaction(_newExpensive);
 
-      Provider.of<Categories>(ctx, listen: false)
-          .increaseTotalSpent(_categorySelected!.id, _newExpensive.volume);
+      Box budgetsBox = Hive.box<Budget>('budgets');
+      Budget updateBudget = budgetsBox.values.elementAt(currentBudget);
+      updateBudget.categories = updateBudget.categories.map((cate) {
+        if (cate.id == widget.categoryId) {
+          cate.totalSpent += _newExpensive.volume;
+        }
+        return cate;
+      }).toList();
 
+      // Update DB
+      budgetsBox.put(updateBudget.id, updateBudget);
+
+      // Provider.of<Categories>(context, listen: false)
+      //   .setItems(updateBudget.categories, notify: true);
+      Provider.of<Categories>(context, listen: false).notifyDataChange();
+      // show snackbar
       final snackBar = SnackBar(
-          content: Text(AppLocalizations.of(context)!.msgCreateExpenseSuccess));
+          content: Text(AppLocalizations.of(context)!.msgCreateExpenseSuccess),
+        duration: Duration(seconds: 1));
 
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
@@ -68,6 +97,7 @@ class _AddExpensiveState extends State<AddExpensive> {
     }
   }
 
+  /// Presents a date picker to the user.
   void _presentDatePicker() {
     showDatePicker(
       context: context,
@@ -86,6 +116,7 @@ class _AddExpensiveState extends State<AddExpensive> {
     print('...');
   }
 
+  /// Presents a time picker to the user.
   void _presentTimePicker() {
     showTimePicker(
       context: context,
@@ -103,30 +134,17 @@ class _AddExpensiveState extends State<AddExpensive> {
 
   @override
   Widget build(BuildContext context) {
+    var metadata = MetadataStorage.getMetadata();
     List<Category> categories =
         Provider.of<Categories>(context, listen: false).expensiveCategories;
     if (categories.length != 0) {
-      if (widget.categoryId != null) {
-        _categorySelected =
-            categories.firstWhere((cate) => cate.id == widget.categoryId);
-      } else {
-        if (_categorySelected == null) _categorySelected = categories[0];
-      }
+      _categorySelected =
+          categories.firstWhere((cate) => cate.id == widget.categoryId);
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Expensive'),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(
-        //       Icons.save,
-        //       color: Theme.of(context).accentColor,
-        //     ),
-        //     iconSize: 40,
-        //     onPressed: () => _saveForm(context),
-        //   ),
-        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -169,7 +187,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                     child: IconButton(
                       icon: Icon(
                         Icons.add_circle_outline,
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                       iconSize: 30,
                       onPressed: () => _onNewCategoryTouch(context),
@@ -179,17 +197,17 @@ class _AddExpensiveState extends State<AddExpensive> {
               ),
               TextFormField(
                 autofocus: widget.categoryId != null,
-                cursorColor: Theme.of(context).accentColor,
+                cursorColor: Theme.of(context).colorScheme.secondary,
                 decoration: InputDecoration(
-                    labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                    labelStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary),
                     labelText: 'Amount',
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
-                    prefix: Text(
-                        Provider.of<Metadata>(context, listen: false).currency!,
+                    prefix: Text(metadata!.currency,
                         style: TextStyle(fontSize: 18))),
                 textInputAction: TextInputAction.done,
                 validator: (value) {
@@ -210,17 +228,19 @@ class _AddExpensiveState extends State<AddExpensive> {
                       volume: double.parse(value!),
                       description: _newExpensive.description,
                       id: '',
+                      categoryId: _categorySelected!.id,
                       date: DateTime(2023));
                 },
               ),
               TextFormField(
-                cursorColor: Theme.of(context).accentColor,
+                cursorColor: Theme.of(context).colorScheme.secondary,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                  labelStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.secondary),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
-                      color: Theme.of(context).accentColor,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                 ),
@@ -230,6 +250,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                       description: value,
                       volume: _newExpensive.volume,
                       id: '',
+                      categoryId: _categorySelected!.id,
                       date: DateTime(2023));
                 },
               ),
@@ -250,7 +271,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                               ? 'No Date Chosen!'
                               : '${DateFormat.yMd().format(_selectedDate)}',
                           style: TextStyle(
-                            color: Theme.of(context).accentColor,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                         onPressed: _presentDatePicker,
@@ -263,7 +284,7 @@ class _AddExpensiveState extends State<AddExpensive> {
                               ? 'No Time Chosen!'
                               : '${DateFormat.Hm().format(_selectedDate)}',
                           style: TextStyle(
-                            color: Theme.of(context).accentColor,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                         onPressed: _presentTimePicker,
@@ -277,10 +298,12 @@ class _AddExpensiveState extends State<AddExpensive> {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(
-                            width: 1.3, color: Theme.of(context).accentColor),
+                            width: 1.3,
+                            color: Theme.of(context).colorScheme.secondary),
                         padding: EdgeInsets.symmetric(horizontal: 30),
-                        foregroundColor: Theme.of(context).accentColor),
-                    onPressed: () => _saveForm(context),
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary),
+                    onPressed: () => _saveForm(context, metadata.currentBudget),
                     icon: Icon(Icons.save, size: 24.0),
                     label: Text(AppLocalizations.of(context)!.save), // <-- Text
                   ))

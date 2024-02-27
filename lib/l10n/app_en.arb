@@ -13,6 +13,7 @@
   "expense": "Expense",
   "budget": "Budget",
   "account": "Account",
+  "settings": "Settings",
   "progressByCategory": "Progress by category",
   "budgetedByCategory": "Budgeted by category",
   "expenditureByCategory": "Expenditure by category",

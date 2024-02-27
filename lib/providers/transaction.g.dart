@@ -19,6 +19,7 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
     return Transaction(
       id: fields[0] as String,
       description: fields[1] as String?,
+      categoryId: fields[4] as String?,
       volume: fields[2] as double,
       date: fields[3] as DateTime,
     );
@@ -27,7 +28,7 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
   @override
   void write(BinaryWriter writer, Transaction obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
       ..writeByte(2)
       ..write(obj.volume)
       ..writeByte(3)
-      ..write(obj.date);
+      ..write(obj.date)
+      ..writeByte(4)
+      ..write(obj.categoryId);
   }
 
   @override

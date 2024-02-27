@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:money_budget_frontend_offile/hive/metadata_storage.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../helpers/helper.dart';
-import '../providers/metadata.dart';
 
 class SpendBar extends StatelessWidget {
   final double totalAmount;
@@ -13,14 +12,12 @@ class SpendBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // List<Color> colors = [Theme.of(context).backgroundColor, Colors.amber.shade200, Theme.of(context).accentColor];
+    var metadata = MetadataStorage.getMetadata()!;
     List<Color> colors = [
       Colors.amber.shade100,
       Colors.amber.shade400,
       Colors.amber.shade800
     ];
-    // List<Color> colors = [Colors.deepOrangeAccent[20], Colors.deepOrangeAccent[50], Colors.deepOrangeAccent[80] ];
-    // List<Color> colors = [Theme.of(context).backgroundColor, Colors.amber, Theme.of(context).accentColor ];
     var remaining = (1 - spendingPctOfTotal) * totalAmount;
 
     return LayoutBuilder(builder: (ctx, constraint) {
@@ -54,8 +51,8 @@ class SpendBar extends StatelessWidget {
                 Center(
                   child: Text(
                     remaining >= 0
-                        ? '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, remaining)} ${AppLocalizations.of(context)!.remaining}'
-                        : '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, remaining * -1)} ${AppLocalizations.of(context)!.overSpent}',
+                        ? '${Helper.formatCurrency(metadata.currency, remaining)} ${AppLocalizations.of(context)!.remaining}'
+                        : '${Helper.formatCurrency(metadata.currency, remaining * -1)} ${AppLocalizations.of(context)!.overSpent}',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: Colors.black87),
                   ),

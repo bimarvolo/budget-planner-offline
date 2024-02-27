@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:money_budget_frontend_offile/hive/metadata_storage.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/budget.dart';
 import '../providers/category.dart';
 import '../helpers/helper.dart';
-import '../providers/metadata.dart';
 import '../providers/categories.dart';
 import '../widgets/spend_bar.dart';
 import '../screens/list_transactions_screen.dart';
@@ -18,12 +18,12 @@ class CategoryItem extends StatelessWidget {
 
   onDeleteCate(ctx, Category cate) async {
     try {
-      Metadata metaData = Provider.of<Metadata>(ctx, listen: false);
+      var metadata = MetadataStorage.getMetadata()!;
 
       var budget;
-      if (metaData.currentBudget != null) {
+      if (metadata.currentBudget != -1) {
         var box = Hive.box<Budget>('budgets');
-        budget = box.getAt(metaData.currentBudget!);
+        budget = box.getAt(metadata.currentBudget);
 
         List<Category> categories = budget!.categories;
         categories.remove(cate);
@@ -32,14 +32,16 @@ class CategoryItem extends StatelessWidget {
 
         await Provider.of<Categories>(ctx, listen: false).deleteCategory(cate);
         final snackBar = SnackBar(
-            content: Text(AppLocalizations.of(ctx)!.msgRemoveCategorySuccess));
+            content: Text(AppLocalizations.of(ctx)!.msgRemoveCategorySuccess),
+        duration: Duration(seconds: 1));
         ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
         Navigator.of(ctx).pop(true);
       }
     } catch (e) {
       String message = AppLocalizations.of(ctx)!.msgCreateBudgetFailed;
 
-      final snackBar = SnackBar(content: Text(message));
+      final snackBar = SnackBar(content: Text(message),
+        duration: Duration(seconds: 1));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop(false);
     }
@@ -47,11 +49,12 @@ class CategoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var metadata = MetadataStorage.getMetadata()!;
     var i18n = AppLocalizations.of(context)!;
     double totalSpent = category.totalSpent;
     return Card(
-      elevation: 6,
-      margin: EdgeInsets.all(10),
+      elevation: 3,
+      margin: EdgeInsets.all(5),
       child: GestureDetector(
         onTap: () => {
           Navigator.pushNamed(context, ListTransactions.routeName,
@@ -71,17 +74,17 @@ class CategoryItem extends StatelessWidget {
                     TextButton(
                         onPressed: () => onDeleteCate(context, category),
                         child: Text(i18n.delete)),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: Text(i18n.cancel),
-                    ),
+                    // TextButton(
+                    //   onPressed: () => Navigator.of(context).pop(false),
+                    //   child: Text(i18n.cancel),
+                    // ),
                   ],
                 );
               },
             );
           },
           background: Container(
-            color: Theme.of(context).errorColor,
+            color: Theme.of(context).colorScheme.error,
             child: Icon(
               Icons.delete,
               color: Colors.white,
@@ -91,7 +94,7 @@ class CategoryItem extends StatelessWidget {
             padding: EdgeInsets.only(right: 20),
           ),
           child: Container(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.only(bottom: 10, top: 2, right: 10, left: 10),
             child: Column(
               children: [
                 Container(
@@ -101,12 +104,12 @@ class CategoryItem extends StatelessWidget {
                     children: [
                       if (category.iconData != null)
                         Icon(category.iconData,
-                            color: Theme.of(context).accentColor),
+                            color: Theme.of(context).colorScheme.secondary),
                       Padding(
                         padding: const EdgeInsets.only(left: 5),
                         child: Text(category.description,
                             style: TextStyle(
-                                color: Theme.of(context).accentColor,
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold)),
                       ),
@@ -124,14 +127,9 @@ class CategoryItem extends StatelessWidget {
                         ),
                         Text(
                           category.totalSpent == null
-                              ? Helper.formatCurrency(
-                                  Provider.of<Metadata>(context, listen: false)
-                                      .currency,
-                                  0)
+                              ? Helper.formatCurrency(metadata.currency, 0)
                               : Helper.formatCurrency(
-                                  Provider.of<Metadata>(context, listen: false)
-                                      .currency,
-                                  category.totalSpent),
+                                  metadata.currency, category.totalSpent),
                           style: TextStyle(
                               fontSize: 11, fontWeight: FontWeight.bold),
                         ),
@@ -145,9 +143,7 @@ class CategoryItem extends StatelessWidget {
                         ),
                         Text(
                           Helper.formatCurrency(
-                              Provider.of<Metadata>(context, listen: false)
-                                  .currency,
-                              category.volume),
+                              metadata.currency, category.volume),
                           style: TextStyle(
                               fontSize: 11, fontWeight: FontWeight.bold),
                         ),

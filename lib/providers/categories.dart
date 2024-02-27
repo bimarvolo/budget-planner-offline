@@ -1,16 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:http/http.dart' as http;
-import 'package:money_budget_frontend_offile/providers/metadata.dart';
-import 'package:provider/provider.dart';
 
-import '../app_constant.dart';
-import '../models/http_exception.dart';
 import './category.dart';
-import 'budget.dart';
 
 class Categories with ChangeNotifier {
   List<Category> _items = [];
@@ -18,16 +8,21 @@ class Categories with ChangeNotifier {
   Categories(this._items);
 
   List<Category> get items {
-    if (_items != null) {
-      return [..._items];
-    }
-
-    return [];
+    return [..._items];
   }
 
-  void setItems(List<Category> list) {
+  void setItems(List<Category> list, {bool notify = false}) {
+    _items = list.map((element) {
+      if (element.iconDataString != null) {
+        element.iconData = IconData(int.parse(element.iconDataString!),
+            fontFamily: 'MaterialIcons');
+      }
+      return element;
+    }).toList();
+
     _items = list;
-    notifyListeners();
+
+    if (notify) notifyListeners();
   }
 
   clearData() {
@@ -36,10 +31,13 @@ class Categories with ChangeNotifier {
   }
 
   List<Category> get expensiveCategories {
+    print("get expensive categories ...");
     return _items.where((cate) => cate.type == 'expensive').toList();
   }
 
   List<Category> get incomeCategories {
+    print("get income categories ...");
+
     return _items.where((cate) => cate.type == 'income').toList();
   }
 
@@ -52,40 +50,26 @@ class Categories with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateCategory(String id, Category newCategory) async {
-    // final prodIndex = _items.indexWhere((prod) => prod.id == id);
-    // if (prodIndex >= 0) {
-    //   final url = '${AppConst.BASE_URL}/category/$id';
-    //   await http.patch(Uri.parse(url),
-    //       headers: {
-    //         HttpHeaders.authorizationHeader: authToken,
-    //       },
-    //       body: json.encode({
-    //         'type': newCategory.type,
-    //         'description': newCategory.description,
-    //         'volume': newCategory.volume,
-    //         'totalSpent': newCategory.totalSpent,
-    //       }));
-    //   _items[prodIndex] = newCategory;
-    //   notifyListeners();
-    // } else {}
-  }
-
   Future<bool> deleteCategory(Category cate) async {
     _items.remove(cate);
     notifyListeners();
     return true;
   }
 
-  void increaseTotalSpent(String categoryId, double volume) {
+  void localIncreaseTotalSpent(String categoryId, double volume) {
     var existed = findById(categoryId);
     existed.totalSpent = existed.totalSpent + volume;
+
     notifyListeners();
   }
 
   void decreaseTotalSpent(String categoryId, double volume) {
     var existed = findById(categoryId);
     existed.totalSpent = existed.totalSpent - volume;
+    notifyListeners();
+  }
+
+  void notifyDataChange() {
     notifyListeners();
   }
 }

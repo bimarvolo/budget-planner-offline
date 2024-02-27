@@ -1,0 +1,41 @@
+<en-US>
+Release version 1.2.3
+Budget creation, deletion
+Category creation, deletion
+Transaction create, update, delete
+</en-US>
+
+<de-DE>
+Versionshinweis 1.2.3
+Budget erstellen, löschen
+Kategorie erstellen, löschen
+Transaktion erstellen, aktualisieren, löschen
+</de-DE>
+
+<es-ES>
+Versión de lanzamiento 1.2.3
+Creación y eliminación de presupuestos
+Creación y eliminación de categorías
+Crear, actualizar y eliminar transacciones
+</es-ES>
+
+<pt-PT>
+Versão de lançamento 1.2.3
+Criação e exclusão de orçamentos
+Criação e exclusão de categorias
+Criar, atualizar e excluir transações
+</pt-PT>
+
+<fr-FR>
+Version de sortie 1.2.3
+Création et suppression de budget
+Création et suppression de catégorie
+Création, mise à jour et suppression de transaction
+</fr-FR>
+
+<vi>
+Phiên bản phát hành 1.2.3
+Tạo và xóa ngân sách
+Tạo và xóa danh mục
+Tạo, cập nhật và xóa giao dịch
+</vi>

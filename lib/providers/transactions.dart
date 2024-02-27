@@ -1,15 +1,13 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart' as http;
 
-import '../app_constant.dart';
-import '../models/http_exception.dart';
 import './transaction.dart';
-import 'budget.dart';
 
+/// A class that represents a collection of transactions.
+///
+/// This class provides functionality for managing and manipulating transactions.
+/// It also implements the [ChangeNotifier] mixin to notify listeners when the
+/// list of transactions is modified.
 class Transactions with ChangeNotifier {
   List<Transaction> _items = [];
   String? categoryId;
@@ -17,29 +15,35 @@ class Transactions with ChangeNotifier {
   Transactions(this._items);
 
   List<Transaction> get items {
-    if (_items != null) {
-      return [..._items];
-    }
-
-    return [];
+    return [..._items];
   }
 
+  /// Sets the items in the transaction list.
+  ///
+  /// The [list] parameter is a list of [Transaction] objects that will be set as the new items in the transaction list.
   void setItems(List<Transaction> list) {
     _items = list;
     _items.sort((a, b) => b.date.compareTo(a.date));
     notifyListeners();
   }
 
+  /// Finds a transaction by its ID.
+  ///
+  /// Returns the transaction with the specified ID, or null if no transaction is found.
   Transaction findById(String id) {
     return _items.firstWhere((cate) => cate.id == id);
   }
 
+  ///
+  /// This method retrieves expensive transactions from a data source and sets them in the provider.
+  /// The [categoryId] parameter specifies the category for which the transactions should be fetched.
+  /// This method is asynchronous and returns a [Future] that completes when the transactions are fetched and set.
   Future<void> fetchAndSetExpensive(String categoryId) async {
     Box<Transaction> transBox = Hive.box<Transaction>('transactions');
 
     final List<Transaction> loadedTransactions = [];
     transBox.values.forEach((element) {
-      loadedTransactions.add(element);
+      if (element.categoryId == categoryId) loadedTransactions.add(element);
     });
 
     _items = loadedTransactions;
@@ -50,103 +54,56 @@ class Transactions with ChangeNotifier {
     // }
   }
 
+  /// Adds a transaction to the list of transactions.
+  ///
+  /// The [transaction] parameter represents the transaction to be added.
+  /// This method is asynchronous and returns a [Future] that completes when the transaction is added.
+  /// Throws an error if the transaction is null.
   Future<void> addTransaction(Transaction transaction) async {
     Box<Transaction> transBox = Hive.box<Transaction>('transactions');
 
-    transBox.put(transaction.id, transaction);
+    // clear transactionId
+    await transBox.put(transaction.id, transaction);
     _items.add(transaction);
     notifyListeners();
-
-    // final url = '${AppConst.BASE_URL}/transactions';
-    // try {
-    //   final response = await http.post(
-    //     Uri.parse(url),
-    //     headers: {
-    //       HttpHeaders.authorizationHeader: authToken,
-    //     },
-    //     body: json.encode(
-    //       {
-    //         'userId': userId,
-    //         'categoryId': transaction.categoryId,
-    //         'description': transaction.description,
-    //         'volume': transaction.volume,
-    //         'date': transaction.date.toUtc().toIso8601String()
-    //       },
-    //     ),
-    //   );
-
-    //   final newTransaction = Transaction(
-    //     description: transaction.description,
-    //     volume: transaction.volume,
-    //     categoryId: transaction.categoryId,
-    //     date: transaction.date,
-    //     id: json.decode(response.body)['trans']['id'],
-    //   );
-    //   _items.add(newTransaction);
-    //   notifyListeners();
-    // } catch (error) {
-    //   print(error);
-    //   throw error;
-    // }
   }
 
-  Future<void> updateTransaction(Transaction newTransaction) async {
-    // final transIndex =
-    //     _items.indexWhere((trans) => trans.id == newTransaction.id);
-    // try {
-    //   if (transIndex >= 0) {
-    //     final url = '${AppConst.BASE_URL}/transaction/${newTransaction.id}';
+  /// Updates the given [transaction].
+  ///
+  /// This method is used to update a transaction in the database.
+  /// It takes a [Transaction] object as a parameter and updates the corresponding record in the database.
+  /// The method returns a [Future] that completes when the transaction is successfully updated.
+  Future<void> updateTransaction(Transaction transaction) async {
+    Box<Transaction> transBox = Hive.box<Transaction>('transactions');
+    // final transIndex = transBox.values
+    //     .toList()
+    //     .indexWhere((trans) => trans.id == transaction.id);
 
-    //     await http.patch(Uri.parse(url),
-    //         headers: {
-    //           HttpHeaders.authorizationHeader: authToken,
-    //         },
-    //         body: json.encode({
-    //           'description': newTransaction.description,
-    //           'volume': newTransaction.volume,
-    //           'date': newTransaction.date.toUtc().toIso8601String(),
-    //           'categoryId': newTransaction.categoryId,
-    //         }));
-    //     _items[transIndex] = newTransaction;
-    //     notifyListeners();
-    //   } else {}
-    // } catch (err) {
-    //   print(err);
-    //   throw err;
-    // }
+    await transBox.put(transaction.id, transaction);
+    _items =
+        _items.map((e) => e.id == transaction.id ? transaction : e).toList();
+    notifyListeners();
   }
 
-  Future<bool> deleteTransaction(String id) async {
-    return false;
-    // final url = '${AppConst.BASE_URL}/transaction/$id';
-    // final existingTransIndex = _items.indexWhere((ex) => ex.id == id);
-    // Transaction? existingTransaction = _items[existingTransIndex];
-    // _items.removeAt(existingTransIndex);
-    // notifyListeners();
+  /// Deletes a transaction with the specified [id].
+  ///
+  /// This method is used to remove a transaction from the list of transactions.
+  ///
+  /// Parameters:
+  ///   - id: The unique identifier of the transaction to be deleted.
+  ///
+  /// Returns:
+  ///   - Future<void>: A future that completes when the transaction is successfully deleted.
+  ///
+  /// Throws:
+  ///   - Exception: If the transaction with the specified [id] does not exist.
+  Future<void> deleteTransaction(String id) async {
+    Box<Transaction> transBox = Hive.box<Transaction>('transactions');
+    await transBox.delete(id);
+    final transIndex = _items.indexWhere((trans) => trans.id == id);
+    _items.removeAt(transIndex);
 
-    // try {
-    //   final response = await http.delete(
-    //     Uri.parse(url),
-    //     headers: {
-    //       HttpHeaders.authorizationHeader: authToken,
-    //     },
-    //   );
-
-    //   if (response.statusCode >= 400) {
-    //     _items.insert(existingTransIndex, existingTransaction);
-    //     notifyListeners();
-    //     existingTransaction = null;
-    //     return false;
-    //   } else {
-    //     existingTransaction = null;
-    //     return true;
-    //   }
-    // } catch (e) {
-    //   _items.insert(existingTransIndex, existingTransaction!);
-    //   notifyListeners();
-    //   existingTransaction = null;
-    //   throw e;
-    // }
+    notifyListeners();
   }
 
   void localDeleteTransaction(String id) {

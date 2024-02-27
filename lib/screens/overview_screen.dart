@@ -1,21 +1,15 @@
 import 'package:hive/hive.dart';
-
-import '../app_constant.dart';
-import '../providers/metadata.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:money_budget_frontend_offile/providers/categories.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
+import '../app_constant.dart';
+import '../hive/metadata_storage.dart';
 import '../screens/add_category_screen.dart';
 import '../screens/all_budgets_screen.dart';
-
-import '../providers/categories.dart';
 import '../providers/budget.dart';
-import '../providers/budgets.dart';
-import '../providers/category.dart';
-
 import './add_budget_screen.dart';
 import './report_screen.dart';
 import './account_screen.dart';
@@ -33,7 +27,7 @@ class OverviewScreen extends StatefulWidget {
 class _OverviewScreenState extends State<OverviewScreen> {
   Budget? budget;
   bool _isLoading = true;
-  int _currentTab = 3;
+  int _currentTab = 1;
 
   void _onItemTapped(int tab) {
     setState(() {
@@ -45,6 +39,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
   @override
   void initState() {
     _bindCurrentPage();
+    _bindCurrentBudget();
+    print('Overview is initing .... $_currentTab');
     super.initState();
   }
 
@@ -64,6 +60,19 @@ class _OverviewScreenState extends State<OverviewScreen> {
     _isLoading = false;
   }
 
+  void _bindCurrentBudget() async {
+    var metadata = MetadataStorage.getMetadata();
+    if (metadata != null && metadata.currentBudget != -1) {
+      var box = Hive.box<Budget>('budgets');
+      setState(() {
+        budget = box.getAt(metadata.currentBudget);
+      });
+
+      Provider.of<Categories>(context, listen: false)
+          .setItems(budget!.categories);
+    }
+  }
+
   _setPrefCurrentPage(int p) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(AppConst.CURRENT_PAGE_KEY, p.toString());
@@ -73,7 +82,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
     if (budget == null) {
       final snackBar = SnackBar(
           content:
-              Text(AppLocalizations.of(context)!.msgShouldCreateFirstBudget));
+              Text(AppLocalizations.of(context)!.msgShouldCreateFirstBudget),
+          duration: Duration(seconds: 1));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       return;
     }
@@ -85,21 +95,23 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var i18n = AppLocalizations.of(context)!;
     print('Overview is reloading .... $_currentTab');
-    Metadata metaData = Provider.of<Metadata>(context, listen: true);
+    var i18n = AppLocalizations.of(context)!;
+    var metadata = MetadataStorage.getMetadata();
 
     var budget;
-    if (metaData.currentBudget != null) {
+    if (metadata != null && metadata.currentBudget != -1) {
       var box = Hive.box<Budget>('budgets');
-      budget = box.getAt(metaData.currentBudget!);
+      if (box.values.isNotEmpty) {
+        budget = box.getAt(metadata.currentBudget);
+      }
     }
     var budgetsAppbar = AppBar(
       title: Text(i18n.allBudgets),
       actions: [
         IconButton(
           icon: Icon(Icons.add),
-          color: Theme.of(context).accentColor,
+          color: Theme.of(context).colorScheme.secondary,
           // iconSize: 40,
           onPressed: () => {
             Navigator.of(context).pushNamed(AddBudget.routeName),
@@ -109,25 +121,15 @@ class _OverviewScreenState extends State<OverviewScreen> {
     );
 
     var budgetsAppbarTabAccount = AppBar(
-      title: Text(i18n.account),
+      title: Text(i18n.settings),
     );
-
-    if (Provider.of<Categories>(context, listen: false).items.length == 0) {
-      // this case is when user first login.
-      // Future.delayed(const Duration(milliseconds: 500), () {
-      //   Budget? budget = Provider.of<Budgets>(context, listen: false)
-      //       .findById(metaData.currentBudget!);
-      //   Provider.of<Categories>(context, listen: false)
-      //       .setItems(budget!.categories);
-      // });
-    }
 
     var budgetsAppbarTab2 = AppBar(
       title: Text(
         budget != null ? budget.titleDisplay : i18n.budgetPlaner,
       ),
       actions: [
-        if (metaData.currentBudget != null)
+        if (metadata != null && metadata.currentBudget != -1 && budget != null)
           PopupMenuButton<bool>(
             onSelected: (bool x) => {_showAddCateScreen(context, budget)},
             itemBuilder: (BuildContext context) => <PopupMenuEntry<bool>>[
@@ -170,8 +172,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
             label: i18n.budget,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_box_outlined),
-            label: i18n.account,
+            icon: Icon(Icons.settings),
+            label: i18n.settings,
           ),
         ],
         currentIndex: _currentTab,

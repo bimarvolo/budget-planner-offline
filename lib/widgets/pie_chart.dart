@@ -1,8 +1,6 @@
-import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:charts_flutter/flutter.dart';
+import 'package:community_charts_flutter/community_charts_flutter.dart'
+    as charts;
 import 'package:flutter/material.dart';
-
-import '../helpers/helper.dart';
 
 class PieOutsideLabelChart extends StatelessWidget {
   final List<charts.Series<dynamic, num>> seriesList;
@@ -23,7 +21,7 @@ class PieOutsideLabelChart extends StatelessWidget {
             arcRendererDecorators: [
               new charts.ArcLabelDecorator(
                   outsideLabelStyleSpec:
-                      TextStyleSpec(fontSize: 11, color: this.textColor),
+                      charts.TextStyleSpec(fontSize: 11, color: this.textColor),
                   labelPosition: charts.ArcLabelPosition.outside)
             ]));
   }

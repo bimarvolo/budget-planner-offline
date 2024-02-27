@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:money_budget_frontend_offile/hive/metadata_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:recase/recase.dart';
 
+import '../providers/budget.dart';
 import '../providers/metadata.dart';
 import '../screens/add_category_screen.dart';
 import '../providers/transaction.dart';
@@ -28,6 +31,7 @@ class _EditExpensiveState extends State<EditExpensive> {
       id: '',
       description: '',
       volume: 0.0,
+      categoryId: '',
       date: DateTime(2023));
 
   Category? _categorySelected;
@@ -38,13 +42,16 @@ class _EditExpensiveState extends State<EditExpensive> {
   }
 
   void _saveForm(BuildContext ctx, String oldCateId, String newCateId,
-      Transaction oldTrans) async {
+      Transaction oldTrans, int currentBudget) async {
     var isValidated = _form.currentState!.validate();
     if (!isValidated) return;
+
+    bool isCategoryChange = oldCateId != newCateId && newCateId != "";
 
     _form.currentState!.save();
     _newExpensive = Transaction(
         id: oldTrans.id,
+        categoryId: isCategoryChange ? newCateId : oldTrans.categoryId,
         description: _newExpensive.description,
         volume: _newExpensive.volume,
         date: _selectedDate);
@@ -53,20 +60,37 @@ class _EditExpensiveState extends State<EditExpensive> {
       await Provider.of<Transactions>(ctx, listen: false)
           .updateTransaction(_newExpensive);
 
-      if (oldCateId != newCateId) {
-        Provider.of<Categories>(ctx, listen: false)
-            .increaseTotalSpent(oldCateId, (-1 * oldTrans.volume));
-        Provider.of<Categories>(ctx, listen: false)
-            .increaseTotalSpent(newCateId, _newExpensive.volume);
-
-        Provider.of<Transactions>(ctx, listen: false)
-            .localDeleteTransaction(_newExpensive.id);
+      Box budgetsBox = Hive.box<Budget>('budgets');
+      Budget updateBudget = budgetsBox.values.elementAt(currentBudget);
+      if (isCategoryChange) {
+        updateBudget.categories = updateBudget.categories.map((cate) {
+          if (cate.id == newCateId) {
+            cate.totalSpent += _newExpensive.volume;
+          } else if (cate.id == oldCateId) {
+            cate.totalSpent -= oldTrans.volume;
+          }
+          return cate;
+        }).toList();
       } else {
-        Provider.of<Categories>(ctx, listen: false).increaseTotalSpent(
-            _categorySelected!.id, _newExpensive.volume - oldTrans.volume);
+        updateBudget.categories = updateBudget.categories.map((cate) {
+          if (cate.id == oldCateId) {
+            cate.totalSpent += _newExpensive.volume - oldTrans.volume;
+          }
+          return cate;
+        }).toList();
       }
 
-      final snackBar = SnackBar(content: Text('Expensive has been updated!'));
+      budgetsBox.put(updateBudget.id, updateBudget);
+      Provider.of<Categories>(context, listen: false).notifyDataChange();
+
+      if (isCategoryChange) {
+        Provider.of<Transactions>(context, listen: false)
+            .localDeleteTransaction(_newExpensive.id);
+      }
+
+      final snackBar = SnackBar(
+          content: Text('Expensive has been updated!'),
+          duration: Duration(seconds: 1));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
     } catch (error) {
@@ -92,7 +116,7 @@ class _EditExpensiveState extends State<EditExpensive> {
   void _presentDatePicker() {
     showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate,
       firstDate: DateTime(2021),
       lastDate: DateTime(2051),
     ).then((pickedDate) {
@@ -108,9 +132,10 @@ class _EditExpensiveState extends State<EditExpensive> {
 
   void _presentTimePicker() {
     showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    ).then((pickedTime) {
+            context: context,
+            initialTime: TimeOfDay(
+                hour: _selectedDate.hour, minute: _selectedDate.minute))
+        .then((pickedTime) {
       if (pickedTime == null) {
         return;
       }
@@ -123,16 +148,20 @@ class _EditExpensiveState extends State<EditExpensive> {
 
   @override
   Widget build(BuildContext context) {
+    var metadata = MetadataStorage.getMetadata();
     List<Category> categories =
         Provider.of<Categories>(context, listen: false).expensiveCategories;
 
     Transaction trans = Provider.of<Transactions>(context, listen: false)
         .findById(widget.expensiveId);
+    // TODO
 
     if (_categorySelected == null) {
-      // _categorySelected =
-      //     categories.firstWhere((cate) => cate.id == trans.categoryId);
+      _categorySelected =
+          categories.firstWhere((cate) => cate.id == trans.categoryId);
     }
+
+    _selectedDate = trans.date;
 
     return Scaffold(
       appBar: AppBar(
@@ -140,7 +169,7 @@ class _EditExpensiveState extends State<EditExpensive> {
         actions: [
           IconButton(
             icon: Icon(Icons.save),
-            color: Theme.of(context).accentColor,
+            color: Theme.of(context).colorScheme.secondary,
             iconSize: 40,
             onPressed: () => null,
           ),
@@ -167,11 +196,17 @@ class _EditExpensiveState extends State<EditExpensive> {
                       underline: Container(
                         height: 2,
                         // color: Colors.deepPurpleAccent,
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                       onChanged: (Category? newValue) {
                         setState(() {
                           _categorySelected = newValue;
+                          _newExpensive = Transaction(
+                              volume: _newExpensive.volume,
+                              categoryId: _categorySelected!.id,
+                              description: _newExpensive.description,
+                              id: trans.id,
+                              date: trans.date);
                         });
                       },
                       items: categories
@@ -189,7 +224,7 @@ class _EditExpensiveState extends State<EditExpensive> {
                     child: IconButton(
                       icon: Icon(
                         Icons.add_circle_outline,
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                       iconSize: 30,
                       onPressed: () => _onNewCategoryTouch(context),
@@ -198,17 +233,17 @@ class _EditExpensiveState extends State<EditExpensive> {
                 ],
               ),
               TextFormField(
-                cursorColor: Theme.of(context).accentColor,
+                cursorColor: Theme.of(context).colorScheme.secondary,
                 decoration: InputDecoration(
                     labelText: 'Amount',
-                    labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                    labelStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
-                    prefix: Text(
-                        Provider.of<Metadata>(context, listen: false).currency!,
+                    prefix: Text(metadata!.currency,
                         style: TextStyle(fontSize: 18))),
                 textInputAction: TextInputAction.done,
                 initialValue: trans.volume.toString(),
@@ -228,19 +263,21 @@ class _EditExpensiveState extends State<EditExpensive> {
                 onSaved: (value) {
                   _newExpensive = Transaction(
                       volume: double.parse(value!),
+                      categoryId: _categorySelected!.id,
                       description: _newExpensive.description,
                       id: trans.id,
                       date: trans.date);
                 },
               ),
               TextFormField(
-                cursorColor: Theme.of(context).accentColor,
+                cursorColor: Theme.of(context).colorScheme.secondary,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                  labelStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.secondary),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
-                      color: Theme.of(context).accentColor,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                 ),
@@ -249,6 +286,7 @@ class _EditExpensiveState extends State<EditExpensive> {
                 onSaved: (value) {
                   _newExpensive = Transaction(
                     description: value,
+                    categoryId: _categorySelected!.id,
                     volume: _newExpensive.volume,
                     id: trans.id,
                     date: trans.date,
@@ -270,8 +308,8 @@ class _EditExpensiveState extends State<EditExpensive> {
                           _selectedDate == null
                               ? 'No Date Chosen!'
                               : '${DateFormat.yMd().format(_selectedDate)}',
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary),
                         ),
                         onPressed: _presentDatePicker,
                       ),
@@ -282,8 +320,8 @@ class _EditExpensiveState extends State<EditExpensive> {
                           _selectedDate == null
                               ? 'No Time Chosen!'
                               : '${DateFormat.Hm().format(_selectedDate)}',
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary),
                         ),
                         onPressed: _presentTimePicker,
                       ),
@@ -296,10 +334,17 @@ class _EditExpensiveState extends State<EditExpensive> {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(
-                            width: 1.3, color: Theme.of(context).accentColor),
+                            width: 1.3,
+                            color: Theme.of(context).colorScheme.secondary),
                         padding: EdgeInsets.symmetric(horizontal: 30),
-                        foregroundColor: Theme.of(context).accentColor),
-                    onPressed: () => null,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary),
+                    onPressed: () => _saveForm(
+                        context,
+                        trans.categoryId!,
+                        _newExpensive.categoryId!,
+                        trans,
+                        metadata.currentBudget),
                     icon: Icon(Icons.save, size: 24.0),
                     label: Text(AppLocalizations.of(context)!.save), // <-- Text
                   ))

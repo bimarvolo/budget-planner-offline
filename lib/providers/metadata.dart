@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'dart:io';
-
-import '../app_constant.dart';
 
 class Metadata with ChangeNotifier {
+  static const String _boxName = 'metadata';
+
   int? currentBudget;
   String? language;
   String? currency = 'en';

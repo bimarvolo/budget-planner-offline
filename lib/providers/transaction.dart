@@ -16,15 +16,19 @@ class Transaction {
   @HiveField(3)
   final DateTime date;
 
+  @HiveField(4)
+  String? categoryId;
+
   Transaction({
     required this.id,
     this.description,
+    required this.categoryId,
     required this.volume,
     required this.date,
   });
 
   @override
   String toString() {
-    return "Id: $id - des: $description - volume: $volume - date: $date";
+    return "Id: $id - des: $description - volume: $volume - date: $date - cateId: $categoryId";
   }
 }

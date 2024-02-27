@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:money_budget_frontend_offile/hive/metadata_storage.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../helpers/helper.dart';
-import '../providers/metadata.dart';
+import '../providers/budget.dart';
 import '../providers/transactions.dart';
 import '../providers/transaction.dart';
 import '../providers/categories.dart';
@@ -32,44 +34,40 @@ class _ListTransactionsState extends State<ListTransactions> {
     super.initState();
   }
 
-  Future<void> _onTransDelete(ctx, transId, volume) async {
-    bool isDeleted = false;
-    try {
-      isDeleted = await Provider.of<Transactions>(context, listen: false)
-          .deleteTransaction(transId);
-      if (isDeleted) {
-        final snackBar = SnackBar(
-            content:
-                Text(AppLocalizations.of(context)!.msgDeleteExpenseSuccess));
-        ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
-        Provider.of<Categories>(ctx, listen: false)
-            .decreaseTotalSpent(widget.categoryId, volume);
-        Navigator.of(context).pop(true);
-      } else {
-        final snackBar = SnackBar(
-            content:
-                Text(AppLocalizations.of(context)!.msgDeleteExpenseFailed));
-        ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
-        Navigator.of(context).pop(false);
+  Future<void> _onTransDelete(ctx, transId, volume, currentBudget) async {
+    await Provider.of<Transactions>(context, listen: false)
+        .deleteTransaction(transId);
+
+    Box budgetsBox = Hive.box<Budget>('budgets');
+    Budget updateBudget = budgetsBox.values.elementAt(currentBudget);
+    updateBudget.categories = updateBudget.categories.map((cate) {
+      if (cate.id == widget.categoryId) {
+        cate.totalSpent -= volume;
       }
-    } catch (error) {
-      Navigator.of(ctx).pop(false);
-      Helper.showPopup(
-          ctx, error, AppLocalizations.of(context)!.msgDeleteExpenseFailed);
-    }
+      return cate;
+    }).toList();
+
+    // Update DB
+    budgetsBox.put(updateBudget.id, updateBudget);
+
+    Provider.of<Categories>(context, listen: false).notifyDataChange();
+
+    final snackBar = SnackBar(
+        content: Text(AppLocalizations.of(context)!.msgDeleteExpenseSuccess),
+        duration: Duration(seconds: 1));
+    ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
+    Navigator.of(context).pop(true);
   }
 
   @override
   Widget build(BuildContext context) {
+    var metadata = MetadataStorage.getMetadata();
     var i18n = AppLocalizations.of(context)!;
     late Category category;
     List<Category> categories =
-        Provider.of<Categories>(context, listen: true).expensiveCategories;
+        Provider.of<Categories>(context, listen: false).expensiveCategories;
     if (categories.length != 0) {
-      if (widget.categoryId != null) {
-        category =
-            categories.firstWhere((cate) => cate.id == widget.categoryId);
-      } else {}
+      category = categories.firstWhere((cate) => cate.id == widget.categoryId);
     }
 
     List<Transaction> transactions = Provider.of<Transactions>(context).items;
@@ -84,12 +82,12 @@ class _ListTransactionsState extends State<ListTransactions> {
         child: const Icon(Icons.add),
       ),
       appBar: AppBar(
-        title: Text('${category?.description}'),
+        title: Text('${category.description}'),
         // actions: [
         //   IconButton(
         //     icon: Icon(
         //       Icons.add,
-        //       color: Theme.of(context).accentColor,
+        //       color: Theme.of(context).colorScheme.secondary,
         //     ),
         //     // iconSize: 40,
         //     onPressed: () => {
@@ -114,7 +112,7 @@ class _ListTransactionsState extends State<ListTransactions> {
                 ),
                 Text(
                   // '${category.totalSpent}',
-                  '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, category.totalSpent)}',
+                  '${Helper.formatCurrency(metadata!.currency, category.totalSpent)}',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                 ),
               ]),
@@ -124,7 +122,7 @@ class _ListTransactionsState extends State<ListTransactions> {
                   style: TextStyle(fontSize: 11, color: Colors.grey),
                 ),
                 Text(
-                  '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, category.volume)}',
+                  '${Helper.formatCurrency(metadata.currency, category.volume)}',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                 ),
               ]),
@@ -157,16 +155,19 @@ class _ListTransactionsState extends State<ListTransactions> {
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () => {
-                                  _onTransDelete(context, transactions[i].id,
-                                      transactions[i].volume)
+                                  _onTransDelete(
+                                      context,
+                                      transactions[i].id,
+                                      transactions[i].volume,
+                                      metadata.currentBudget)
                                 },
                                 child: Text(i18n.delete),
                               ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                                child: Text(i18n.cancel),
-                              ),
+                              // TextButton(
+                              //   onPressed: () =>
+                              //       Navigator.of(context).pop(false),
+                              //   child: Text(i18n.cancel),
+                              // ),
                             ],
                           );
                         },
@@ -176,7 +177,7 @@ class _ListTransactionsState extends State<ListTransactions> {
                     //
                     //     },
                     background: Container(
-                      color: Theme.of(context).errorColor,
+                      color: Theme.of(context).colorScheme.error,
                       child: Icon(
                         Icons.delete,
                         color: Colors.white,
@@ -193,45 +194,37 @@ class _ListTransactionsState extends State<ListTransactions> {
                       child: Card(
                           elevation: 3,
                           child: ListTile(
-                            // leading: FlutterLogo(size: 52.0),
-                            // leading:  Icon(Icons.calendar_today_sharp, size: 52,),
                             leading: Stack(
-                              alignment: Alignment.topCenter,
+                              alignment: Alignment.center,
                               children: <Widget>[
                                 Icon(
                                   Icons.calendar_today,
-                                  color: Theme.of(context).accentColor,
-                                  // color: Colors.blueGrey,
-                                  size: 48.0,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  size: 42.0,
                                 ),
                                 Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 0),
+                                        padding: const EdgeInsets.only(top: 5),
                                         child: Text(
                                           Helper.formatDay(
                                               transactions[i].date),
                                           style: TextStyle(
                                               fontSize: 15,
-                                              // color: Colors.blueGrey,
-                                              color:
-                                                  Theme.of(context).accentColor,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),
-                                      // Text(
-                                      //   Helper.formatMonth(transactions[i].date),
-                                      //   style: TextStyle(fontSize: 9,color: Colors.blueGrey, fontWeight: FontWeight.bold),
-                                      // ),
                                     ]),
                               ],
                             ),
                             subtitle: Text(transactions[i].description!),
                             title: Text(Helper.formatCurrency(
-                                Provider.of<Metadata>(context, listen: false)
-                                    .currency,
-                                transactions[i].volume)),
+                                metadata.currency, transactions[i].volume)),
                             trailing: Text(
                                 Helper.formatDateTime(transactions[i].date)),
                             // isThreeLine: true,

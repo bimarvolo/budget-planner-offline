@@ -1,7 +1,7 @@
 import '../providers/category.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:community_charts_flutter/community_charts_flutter.dart' as charts;
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../helpers/helper.dart';
@@ -58,12 +58,12 @@ List<Category> _tempCates = [
 class _ReportState extends State<Report> {
   @override
   Widget build(BuildContext context) {
-    var accentColor = Theme.of(context).accentColor;
+    var colorScheme = Theme.of(context).colorScheme;
     final List<Color> pieColors = [
-      accentColor.withOpacity(.8),
-      accentColor.withOpacity(.4),
-      accentColor.withOpacity(.6),
-      accentColor.withOpacity(.2),
+      colorScheme.secondary.withOpacity(.8),
+      colorScheme.secondary.withOpacity(.4),
+      colorScheme.secondary.withOpacity(.6),
+      colorScheme.secondary.withOpacity(.2),
     ];
 
     var expensiveCates =

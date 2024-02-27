@@ -1,0 +1,37 @@
+<en-US>
+Budget
+Manage finances easily: Personal Budget Planner
+Take control of your finances with Personal Budget Planner! Our intuitive app helps you track expenses, set budgets, and achieve your financial goals effortlessly. With customizable categories and insightful reports, managing your money has never been easier. Stay organized, save smarter, and plan for a brighter financial future with Personal Budget Planner.
+</en-US>
+
+<de-DE>
+Budget
+Verwalten Sie Ihre Finanzen einfach: Persönlicher Budgetplaner
+Übernehmen Sie die Kontrolle über Ihre Finanzen mit dem Persönlichen Budgetplaner! Unsere intuitive App hilft Ihnen dabei, Ausgaben zu verfolgen, Budgets festzulegen und Ihre finanziellen Ziele mühelos zu erreichen. Mit anpassbaren Kategorien und aufschlussreichen Berichten war das Verwalten Ihres Geldes noch nie einfacher. Bleiben Sie organisiert, sparen Sie intelligenter und planen Sie für eine finanziell erfolgreichere Zukunft mit dem Persönlichen Budgetplaner.
+</de-DE>
+
+<es-ES>
+Presupuesto
+Administre sus finanzas fácilmente: Planificador de presupuesto personal
+¡Tome el control de sus finanzas con el Planificador de presupuesto personal! Nuestra intuitiva aplicación le ayuda a realizar un seguimiento de los gastos, establecer presupuestos y alcanzar sus metas financieras sin esfuerzo. Con categorías personalizables e informes perspicaces, administrar su dinero nunca ha sido tan fácil. Manténgase organizado, ahorre de manera más inteligente y planifique un futuro financiero más brillante con el Planificador de presupuesto personal.
+</es-ES>
+
+<pt-PT>
+Orçamento
+Gerencie suas finanças facilmente: Planejador de Orçamento Pessoal
+Assuma o controle de suas finanças com o Planejador de Orçamento Pessoal! Nosso aplicativo intuitivo ajuda você a acompanhar despesas, definir orçamentos e alcançar seus objetivos financeiros sem esforço. Com categorias personalizáveis e relatórios esclarecedores, gerenciar seu dinheiro nunca foi tão fácil. Mantenha-se organizado, economize de forma mais inteligente e planeje um futuro financeiro mais promissor com o Planejador de Orçamento Pessoal.
+</pt-PT>
+
+<fr-FR>
+Budget
+Gérez facilement vos finances : Planificateur de budget personnel
+Prenez le contrôle de vos finances avec le Planificateur de budget personnel ! Notre application intuitive vous aide à suivre vos dépenses, définir des budgets et atteindre vos objectifs financiers sans effort. Avec des catégories personnalisables et des rapports instructifs, la gestion de votre argent n'a jamais été aussi facile. Restez organisé, économisez intelligemment et planifiez un avenir financier plus prometteur avec le Planificateur de budget personnel.
+</fr-FR>
+
+
+<vi>
+Ngân sách
+Quản lý tài chính dễ dàng: Kế hoạch Ngân sách Cá nhân
+Tiếp quản tài chính của bạn với Kế hoạch Ngân sách Cá nhân! Ứng dụng thông minh của chúng tôi giúp bạn theo dõi chi tiêu, đặt ngân sách và đạt được mục tiêu tài chính một cách dễ dàng. Với các danh mục có thể tùy chỉnh và báo cáo thông minh, quản lý tiền của bạn chưa bao giờ dễ dàng như vậy. Giữ tổ chức, tiết kiệm thông minh và lập kế hoạch cho một tương lai tài chính tươi sáng với Kế hoạch Ngân sách Cá nhân.
+</vi>
+

@@ -1,15 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
-import 'metadata.dart';
-import 'package:provider/provider.dart';
-
-import '../providers/category.dart';
-import '../app_constant.dart';
-import '../models/http_exception.dart';
+import 'package:money_budget_frontend_offile/providers/category.dart';
 import './budget.dart';
 
 class Budgets with ChangeNotifier {
@@ -121,7 +112,6 @@ class Budgets with ChangeNotifier {
   }
 
   Future<Budget> addBudget(Budget budget) async {
-    final url = '${AppConst.BASE_URL}/budget';
     throw "not IMPL";
     // try {
     //   final response = await http.post(
@@ -193,22 +183,8 @@ class Budgets with ChangeNotifier {
     // }
   }
 
-  Future<void> updateBudget(String id, Budget newBudget) async {
-    // final budIndex = _items.indexWhere((bud) => bud.id == id);
-    // if (budIndex >= 0) {
-    //   final url = '${AppConst.BASE_URL}/budget/$id';
-    //   await http.patch(Uri.parse(url),
-    //       headers: {
-    //         HttpHeaders.authorizationHeader: authToken,
-    //       },
-    //       body: json.encode({
-    //         'title': newBudget.title,
-    //         'startDate': newBudget.startDate,
-    //         'endDate': newBudget.endDate,
-    //       }));
-    //   _items[budIndex] = newBudget;
-    //   notifyListeners();
-    // } else {}
+  Future<void> updateBudgetCategory(String id, Category category) async {
+    
   }
 
   Future<bool> deleteBudget(String id) async {

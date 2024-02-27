@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import '../providers/budgets.dart';
-import '../providers/categories.dart';
-import 'package:provider/provider.dart';
 
+import 'package:money_budget_frontend_offile/hive/metadata_storage.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../providers/metadata.dart';
-// import '../providers/auth.dart';
 
 enum EAppTheme { AUTO, LIGHT, DART }
 
@@ -34,25 +30,27 @@ class Account extends StatefulWidget {
 class _AccountState extends State<Account> {
   EAppTheme _currentTheme = EAppTheme.AUTO;
 
-  void _logout(context) {
-    // Provider.of<Budgets>(context, listen: false).clearData();
-    // Provider.of<Categories>(context, listen: false).clearData();
-    // Provider.of<Auth>(context, listen: false).logout();
-    // Navigator.of(context).pushReplacementNamed('/');
-  }
-
   List<Language> _langs = [
     new Language(code: 'en', name: 'English'),
     new Language(code: 'vi', name: 'Vietnam'),
     new Language(code: 'fr', name: 'France'),
+    new Language(code: 'de', name: 'Germany'),
+    new Language(code: 'es', name: 'Spain'),
+    new Language(code: 'pt', name: 'Portugal'),
   ];
   Language? _languageSelected;
 
   List<Currency> _curencies = [
     new Currency(code: '\$', name: 'USD'),
-    new Currency(code: '₫', name: 'Vietnam Dong'),
     new Currency(code: '€', name: 'Euro'),
-    // new Currency(code: 'en', name: 'Euro'),
+    new Currency(code: '₫', name: 'Vietnamese Dong'),
+    new Currency(code: '£', name: 'Pound'),
+    new Currency(code: '¥', name: 'Yen'),
+    new Currency(code: '₹', name: 'Indian Rupee'),
+    new Currency(code: '₱', name: 'Philippine Peso'),
+    new Currency(code: '₩', name: 'South Korean Won'),
+    new Currency(code: '₪', name: 'Israeli New Shekel'),
+    new Currency(code: '₦', name: 'Nigerian Naira'),
   ];
   Currency? _cuSelected;
 
@@ -63,27 +61,23 @@ class _AccountState extends State<Account> {
     var themName = 'DART';
     if (_currentTheme == EAppTheme.AUTO) themName = 'AUTO';
     if (_currentTheme == EAppTheme.LIGHT) themName = 'LIGHT';
-    // Provider.of<AppTheme>(context, listen: false).setThemeMode(themName);
-    Provider.of<Metadata>(context, listen: false).setThemeMode(themName);
+
+    MetadataStorage.storeTheme(themName);
   }
 
   _onSelectLang(Language? lang) {
     setState(() {
       _languageSelected = lang;
     });
-    Provider.of<Metadata>(context, listen: false)
-        .setLanguage(_languageSelected!.code);
-    // Provider.of<AppTheme>(context, listen: false).setLanguage(_languageSelected.code);
-    Provider.of<Metadata>(context, listen: false)
-        .setLanguage(_languageSelected!.code);
+
+    MetadataStorage.storeLang(_languageSelected!.code!);
   }
 
   _onSelectCurrency(Currency? cu) {
     setState(() {
       _cuSelected = cu;
     });
-    Provider.of<Metadata>(context, listen: false)
-        .setCurrency(_cuSelected!.code);
+    MetadataStorage.storeCurrency(_cuSelected!.code!);
   }
 
   _getFlag(lang, ctx) {
@@ -98,6 +92,15 @@ class _AccountState extends State<Account> {
       case 'vi':
         path = 'assets/flags/vietnam_flag.png';
         break;
+      case 'de':
+        path = 'assets/flags/germany_flag.png';
+        break;
+      case 'es':
+        path = 'assets/flags/spain_flag.png';
+        break;
+      case 'pt':
+        path = 'assets/flags/portugal_flag.png';
+        break;
       default:
         break;
     }
@@ -106,24 +109,19 @@ class _AccountState extends State<Account> {
 
   @override
   Widget build(BuildContext context) {
-    // var user = Provider.of<Auth>(context, listen: true);
-    var metaData = Provider.of<Metadata>(context, listen: true);
-    // var appTheme = Provider.of<AppTheme>(context, listen: true);
+    var metadata = MetadataStorage.getMetadata();
 
-    if (metaData.language != null) {
+    if (metadata != null) {
       _languageSelected =
-          _langs.firstWhere((element) => element.code == metaData.language);
-    }
+          _langs.firstWhere((element) => element.code == metadata.lang);
 
-    if (metaData.currency != null) {
       _cuSelected =
-          _curencies.firstWhere((element) => element.code == metaData.currency);
-    }
+          _curencies.firstWhere((element) => element.code == metadata.currency);
 
-    if (metaData.themeMode != null) {
       _currentTheme = EAppTheme.DART;
-      if (metaData.themeMode == 'AUTO') _currentTheme = EAppTheme.AUTO;
-      if (metaData.themeMode == 'LIGHT') _currentTheme = EAppTheme.LIGHT;
+
+      if (metadata.theme == 'AUTO') _currentTheme = EAppTheme.AUTO;
+      if (metadata.theme == 'LIGHT') _currentTheme = EAppTheme.LIGHT;
     }
 
     return Container(
@@ -241,14 +239,6 @@ class _AccountState extends State<Account> {
                     '${AppLocalizations.of(context)!.email}: vinhpx.dev@gmail.com'),
               ],
             ),
-            Container(
-                alignment: Alignment.topCenter,
-                child: ElevatedButton(
-                  child: Text(
-                    AppLocalizations.of(context)!.signOut,
-                  ),
-                  onPressed: () => _logout(context),
-                ))
           ],
         ));
   }

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:money_budget_frontend_offile/hive/metadata_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../providers/metadata.dart';
+import '../providers/categories.dart';
 import '../providers/category.dart';
 import '../providers/budget.dart';
-import '../providers/budgets.dart';
-import './overview_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 enum RangeSelection { THIS_MONTH, THIS_WEEK, THIS_DAY, NEXT_MONTH, NEXT_WEEK }
@@ -328,6 +327,9 @@ class _AddBudgetState extends State<AddBudget> {
           iconData: item.iconData,
           totalSpent: 0.0);
 
+      if (item.iconData != null) {
+        x.iconDataString = item.iconData!.codePoint.toString();
+      }
       exCates.add(x);
     }
 
@@ -340,26 +342,33 @@ class _AddBudgetState extends State<AddBudget> {
         endDate: _selectedEndDate!);
 
     try {
-      // Budget newB =
-      //     await Provider.of<Budgets>(ctx, listen: false).addBudget(_newBudget);
-
       final snackBar = SnackBar(
-          content: Text(AppLocalizations.of(context)!.msgCreateBudgetSuccess));
+        content: Text(AppLocalizations.of(context)!.msgCreateBudgetSuccess),
+        duration: Duration(seconds: 1),
+      );
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
 
-      // Provider.of<Metadata>(ctx, listen: false).setCurrentBudget(newB.id);
-
       Box budgetsBox = Hive.box<Budget>('budgets');
-      budgetsBox.put(_newBudget.id, _newBudget);
+      await budgetsBox.put(_newBudget.id, _newBudget);
+
+      if (budgetsBox.values.length > 0) {
+        for (var i = 0; i < budgetsBox.values.length; i++) {
+          if (budgetsBox.getAt(i)!.id == _newBudget.id) {
+            MetadataStorage.storeCurrentBudget(i);
+            Provider.of<Categories>(context, listen: false)
+                .setItems(budgetsBox.getAt(i)!.categories, notify: true);
+            break;
+          }
+        }
+      }
     } catch (error) {
       print(error);
 
       String message = AppLocalizations.of(context)!.msgCreateBudgetFailed;
-      // if (error?.osError?.errorCode == 7)
-      //   message = AppLocalizations.of(context)!.youAreOffline;
 
-      final snackBar = SnackBar(content: Text(message));
+      final snackBar = SnackBar(content: Text(message),
+        duration: Duration(seconds: 1));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
     }
   }
@@ -460,7 +469,7 @@ class _AddBudgetState extends State<AddBudget> {
           IconButton(
             icon: Icon(
               Icons.save,
-              color: Theme.of(context).accentColor,
+              color: Theme.of(context).colorScheme.secondary,
             ),
             iconSize: 40,
             onPressed: () => _saveForm(context),

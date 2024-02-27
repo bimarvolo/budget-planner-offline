@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
-import '../providers/budget.dart';
-import '../providers/budgets.dart';
-import '../providers/metadata.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_iconpicker/flutter_iconpicker.dart';
-import '../helpers/helper.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../hive/metadata_storage.dart';
+import '../providers/budget.dart';
+import '../helpers/helper.dart';
 import '../providers/categories.dart';
 import '../providers/category.dart';
 
@@ -47,10 +46,10 @@ class _AddCategoryState extends State<AddCategory> {
   void _saveForm(BuildContext ctx) async {
     var isValidated = _form.currentState!.validate();
     if (!isValidated) return;
-    var uudi = Uuid();
+    var uuid = Uuid();
     _form.currentState!.save();
     _newCategory = Category(
-        id: uudi.v4(),
+        id: uuid.v4(),
         description: _newCategory.description,
         type: _categoryType == CategoryType.expensive ? 'expensive' : 'income',
         volume: _newCategory.volume,
@@ -59,15 +58,16 @@ class _AddCategoryState extends State<AddCategory> {
 
     try {
       var box = Hive.box<Budget>('budgets');
-      var categories = _budget!.categories;
-      categories.add(_newCategory);
+      _budget!.categories.add(_newCategory);
       box.put(_budget!.id, _budget!);
-      await Provider.of<Categories>(ctx, listen: false)
-          .addCategory(_newCategory);
+
+      Provider.of<Categories>(context, listen: false)
+          .setItems(_budget!.categories, notify: true);
 
       final snackBar = SnackBar(
           content:
-              Text(AppLocalizations.of(context)!.msgCreateCategorySuccess));
+              Text(AppLocalizations.of(context)!.msgCreateCategorySuccess),
+        duration: Duration(seconds: 1));
       ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
       Navigator.of(ctx).pop();
     } catch (error) {
@@ -81,13 +81,11 @@ class _AddCategoryState extends State<AddCategory> {
     Budget? budget;
 
     var box = Hive.box<Budget>('budgets');
-    Metadata metaData = Provider.of<Metadata>(context, listen: false);
-    if (metaData.currentBudget != null) {
-      budget = box.getAt(metaData.currentBudget!);
-      setState(() {
-        _budget = budget;
-      });
-    }
+    var metadata = MetadataStorage.getMetadata()!;
+    budget = box.getAt(metadata.currentBudget);
+    setState(() {
+      _budget = budget;
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -142,12 +140,13 @@ class _AddCategoryState extends State<AddCategory> {
               ),
               TextFormField(
                 autofocus: true,
-                cursorColor: Theme.of(context).accentColor,
+                cursorColor: Theme.of(context).colorScheme.secondary,
                 decoration: InputDecoration(
-                    labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                    labelStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
                     labelText: AppLocalizations.of(context)!.description),
@@ -169,12 +168,13 @@ class _AddCategoryState extends State<AddCategory> {
                 },
               ),
               TextFormField(
-                cursorColor: Theme.of(context).accentColor,
+                cursorColor: Theme.of(context).colorScheme.secondary,
                 decoration: InputDecoration(
-                    labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                    labelStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
                     labelText: _categoryType == CategoryType.expensive
@@ -214,7 +214,8 @@ class _AddCategoryState extends State<AddCategory> {
                   onPressed: _pickIcon,
                   child: Text(
                     'Pick an icon',
-                    style: TextStyle(color: Theme.of(context).accentColor),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary),
                   ),
                 ),
                 SizedBox(height: 10),
@@ -227,9 +228,11 @@ class _AddCategoryState extends State<AddCategory> {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(
-                            width: 1.3, color: Theme.of(context).accentColor),
+                            width: 1.3,
+                            color: Theme.of(context).colorScheme.secondary),
                         padding: EdgeInsets.symmetric(horizontal: 30),
-                        foregroundColor: Theme.of(context).accentColor),
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary),
                     onPressed: () => _saveForm(context),
                     icon: Icon(Icons.save, size: 24.0),
                     label: Text(AppLocalizations.of(context)!.save), // <-- Text

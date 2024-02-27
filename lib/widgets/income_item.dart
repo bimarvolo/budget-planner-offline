@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:money_budget_frontend_offile/providers/budget.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../helpers/helper.dart';
+import '../hive/metadata_storage.dart';
 import '../providers/category.dart';
 import '../providers/categories.dart';
-import '../providers/metadata.dart';
 
 class IncomeItem extends StatelessWidget {
   final Category income;
 
   IncomeItem(this.income);
 
-  _onDeleteIncome(ctx, Category income) async {
+  _onDeleteIncome(ctx, int budgetId, Category income) async {
     try {
-      bool isDeleted = await Provider.of<Categories>(ctx, listen: false)
-          .deleteCategory(income);
+      Box<Budget> budgetBox = Hive.box("budgets");
+      Budget budget = budgetBox.getAt(budgetId)!;
+      budget.categories.removeWhere((element) => element.id == income.id);
+      budgetBox.put(budget.id, budget);
 
-      if (isDeleted) {
-        final snackBar = SnackBar(
-            content: Text(AppLocalizations.of(ctx)!.msgRemoveIncomeSuccess));
-        ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
-        Navigator.of(ctx).pop(true);
-      } else {
-        final snackBar = SnackBar(
-            content: Text(AppLocalizations.of(ctx)!.msgRemoveIncomeFailed));
-        ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
-        Navigator.of(ctx).pop(false);
-      }
+      await Provider.of<Categories>(ctx, listen: false).deleteCategory(income);
+
+      final snackBar = SnackBar(
+          content: Text(AppLocalizations.of(ctx)!.msgRemoveIncomeSuccess),
+          duration: Duration(seconds: 1));
+      ScaffoldMessenger.of(ctx).showSnackBar(snackBar);
+      Navigator.of(ctx).pop(true);
     } catch (error) {
       Navigator.of(ctx).pop(false);
       Helper.showPopup(
@@ -37,11 +37,11 @@ class IncomeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-//    print(totalSpent);
+    var metadata = MetadataStorage.getMetadata()!;
     var i18n = AppLocalizations.of(context)!;
     return Card(
-      elevation: 6,
-      margin: EdgeInsets.all(10),
+      elevation: 3,
+      margin: EdgeInsets.all(5),
       child: GestureDetector(
         onTap: () => {},
         child: Dismissible(
@@ -56,19 +56,20 @@ class IncomeItem extends StatelessWidget {
                   content: Text(i18n.areYouSureYouWishToDeleteThisItem),
                   actions: <Widget>[
                     TextButton(
-                        onPressed: () => _onDeleteIncome(context, income),
+                        onPressed: () => _onDeleteIncome(
+                            context, metadata.currentBudget, income),
                         child: Text(i18n.delete)),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: Text(i18n.cancel),
-                    ),
+                    // TextButton(
+                    //   onPressed: () => Navigator.of(context).pop(false),
+                    //   child: Text(i18n.cancel),
+                    // ),
                   ],
                 );
               },
             );
           },
           background: Container(
-            color: Theme.of(context).errorColor,
+            color: Theme.of(context).colorScheme.error,
             child: Icon(
               Icons.delete,
               color: Colors.white,
@@ -84,12 +85,12 @@ class IncomeItem extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
-                '${Helper.formatCurrency(Provider.of<Metadata>(context, listen: false).currency, income.volume)}',
+                '${Helper.formatCurrency(metadata.currency, income.volume)}',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               leading: Icon(
                 income.iconData,
-                color: Theme.of(context).accentColor,
+                color: Theme.of(context).colorScheme.secondary,
               ),
             ),
           ),
