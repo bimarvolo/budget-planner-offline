@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="personal.budget.offline">
+    package="budget.offline.personal">
    <application
         android:label="Budget"
         android:name="${applicationName}"

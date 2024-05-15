@@ -1,4 +1,4 @@
-package personal.budget.offline
+package budget.offline.personal
 
 import io.flutter.embedding.android.FlutterActivity
 
