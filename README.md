@@ -1,4 +1,4 @@
-# money_budget_frontend
+# money budget offline
 
 A personal budgets management
 
